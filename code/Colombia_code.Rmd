@@ -1,0 +1,116 @@
+---
+title: "Colombia_code"
+authors: "Chloe, Weilin, and Gabby"
+output: html_document
+date: "2025-04-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=60), tidy=TRUE) 
+```
+
+```{r package, message=FALSE}
+library(readxl)
+library(openxlsx)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(forecast)  
+library(Kendall)
+library(tseries)
+library(outliers)
+library(tidyverse)
+library(smooth)
+library(zoo)
+library(kableExtra)
+library(writexl)
+
+```
+
+## Importing Data
+```{r}
+
+#importing data
+Colombia_pre_uncleaned <- read_excel("../data/Colombia_precipitation.xlsx")   # I changed the to the relative address 
+
+colSums(is.na(Colombia_pre_uncleaned))
+Colombia_pre_uncleaned$DJF[is.na(Colombia_pre_uncleaned$DJF)] <- mean(Colombia_pre_uncleaned$DJF, na.rm = TRUE)
+colSums(is.na(Colombia_pre_uncleaned))
+
+write.csv(Colombia_pre_uncleaned, "../data/processed_colombia_precipitation.csv", row.names = FALSE)
+
+colombia_pre <- read_csv("../data/processed_colombia_precipitation.csv")
+
+head(colombia_pre)
+nvar <- ncol(colombia_pre) - 1
+nobs <- nrow(colombia_pre)
+
+```
+
+## Initial Plots & Time Series
+```{r}
+
+ts_ann_pre <- ts(colombia_pre$ANN, 
+                         start = colombia_pre$YEAR[1],
+                         frequency = 1)
+
+plot(ts_ann_pre,
+     main = "Annual Precipitation Time Series", 
+     ylab = "Precipitation (mm)", 
+     xlab = "Year", 
+     col = "blue", 
+     lwd = 1)
+
+par(mfrow=c(1,2))
+ACF_Plot <- Acf(ts_ann_pre, lag = 40, plot = TRUE)
+PACF_Plot <- Pacf(ts_ann_pre, lag = 40)
+par(mfrow=c(1,1))
+
+
+```
+
+
+## 
+```{r}
+
+# Training data: 1901-2020
+training_data <- window(ts_colombia_pre, end=c(2020))
+
+# Test data: 2021-2024
+test_data <- window(ts_colombia_pre, start=c(2021))
+
+```
+
+
+## Restart
+```{r}
+
+monthly_data <- colombia_pre %>%
+  select(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC)
+
+monthly_data_long <- monthly_data %>%
+  pivot_longer(cols = JAN:DEC, names_to = "Month", values_to = "Precipitation")
+
+monthly_data_long <- monthly_data_long %>%
+  mutate(Month_Num = match(tolower(Month), tolower(month.abb)),
+         Date = as.Date(paste(YEAR, Month_Num, "01", sep = "-")),
+         .before = 1) %>%
+  arrange(Date)
+
+ts_monthly <- ts(monthly_data_long$Precipitation, 
+                 start = c(min(monthly_data_long$YEAR), 1), 
+                 frequency = 12)
+
+autoplot(ts_monthly) +
+  ggtitle("Monthly Precipitation Time Series") +
+  xlab("Year") +
+  ylab("Precipitation (mm)") +
+  theme_minimal()
+
+par(mfrow=c(1,2))
+acf(ts_monthly, lag.max = 48, main="ACF of Monthly Precipitation")
+pacf(ts_monthly, lag.max = 48, main="PACF of Monthly Precipitation")
+par(mfrow=c(1,1))
+
+```
+
