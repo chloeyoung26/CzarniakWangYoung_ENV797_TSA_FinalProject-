@@ -51,7 +51,7 @@ nobs <- nrow(colombia_pre)
 ```
 
 
-## Initial Plots & Time Series - Monthly
+## Data Cleaning & TS Creation
 ```{r}
 
 monthly_data <- colombia_pre %>%
@@ -76,26 +76,29 @@ ts_monthly <- ts(monthly_data_long$Precipitation,
 ## Initial Plots
 ```{r}
 autoplot(ts_monthly) +
-  ggtitle("Monthly Precipitation Time Series") +
+  ggtitle("Monthly Precipitation Time Series (Colombia)") +
   xlab("Year") +
   ylab("Precipitation (mm)") +
   theme_minimal()
 
 par(mfrow=c(1,2))
-acf(ts_monthly, lag.max = 48, main="ACF of Monthly Precipitation")
-pacf(ts_monthly, lag.max = 48, main="PACF of Monthly Precipitation")
+acf(ts_monthly, lag.max = 48, main="ACF (Colombia)")
+pacf(ts_monthly, lag.max = 48, main="PACF (Colombia)")
 par(mfrow=c(1,1))
 ```
 ## Testing and Training Data
 ```{r}
 
-train_precipitation <- window(ts_monthly, end = c(2020, 12))
+n_for = 120
+train_precipitation <- subset(ts_monthly,
+                                   end = length(ts_monthly)-n_for)
 
-h <- 240
+#create a subset for testing purpose
+test_precipitation <- subset(ts_monthly,
+                                   start = length(ts_monthly)-n_for)
 
-total_months <- length(ts_monthly)
-
-test_precipitation <- window(ts_monthly, start = c(2021, 1), end = c(2024, 12))
+autoplot(train_precipitation)
+autoplot(test_precipitation)
 
 ```
 
@@ -114,17 +117,17 @@ deseasonal_monthly <- seasadj(decompose_monthly)
 ```{r}
 
 fit_arima <- auto.arima(train_precipitation)
-pre_arima <- forecast(fit_arima, h = h)
+pre_arima <- forecast(fit_arima, h = 360)
 
-plot(pre_arima, main = "ARIMA Forecast")
+plot(pre_arima, main = "ARIMA Forecast (Colombia)")
 
 ```
 
 ## STL + ETS
 ```{r}
 
-pre_stl_ets <- stlf(train_precipitation, h = h, method = "ets")
-plot(pre_stl_ets, main = "STL + ETS Forecast")
+pre_stl_ets <- stlf(train_precipitation, h = 360, method = "ets")
+plot(pre_stl_ets, main = "STL + ETS Forecast (Colombia)")
 
 ```
 
@@ -133,11 +136,11 @@ plot(pre_stl_ets, main = "STL + ETS Forecast")
 
 K <- 6
 fourier_train <- fourier(train_precipitation, K = K)
-fourier_future <- fourier(train_precipitation, K = K, h = h)
+fourier_future <- fourier(train_precipitation, K = K, h = 360)
 fit_fourier <- auto.arima(train_precipitation, xreg = fourier_train, seasonal = FALSE)
-pre_fourier <- forecast(fit_fourier, xreg = fourier_future, h = h)
+pre_fourier <- forecast(fit_fourier, xreg = fourier_future, h = 360)
 
-plot(pre_fourier, main = "ARIMA + Fourier Forecast")
+plot(pre_fourier, main = "ARIMA + Fourier Forecast (Colombia)")
 
 ```
 
@@ -145,8 +148,8 @@ plot(pre_fourier, main = "ARIMA + Fourier Forecast")
 ```{r}
 
 fit_tbats <- tbats(train_precipitation)
-pre_tbats <- forecast(fit_tbats, h = h)
-plot(pre_tbats, main = "TBATS Forecast")
+pre_tbats <- forecast(fit_tbats, h = 360)
+plot(pre_tbats, main = "TBATS Forecast (Colombia)")
 
 ```
 
@@ -154,210 +157,54 @@ plot(pre_tbats, main = "TBATS Forecast")
 ```{r}
 
 fit_nnetar <- nnetar(train_precipitation)
-pre_nnetar <- forecast(fit_nnetar, h = h)
-plot(pre_nnetar, main = "NNETAR Forecast")
+pre_nnetar <- forecast(fit_nnetar, h = 360)
+plot(pre_nnetar, main = "NNETAR Forecast (Colombia)")
 
 ```
 
+```{r}
+
+#Model 1: ARIMA
+ARIMA_scores <- accuracy(pre_arima$mean,test_precipitation)  
+
+#Model 2: STL + ETS
+ETS_scores <- accuracy(pre_stl_ets$mean,test_precipitation)  
+
+#Model 3: ARIMA + Fourier 
+ARIMA_scores <- accuracy(pre_fourier$mean,test_precipitation)
+
+# Model 4:  TBATS 
+TBATS_scores <- accuracy(pre_tbats$mean,test_precipitation)
+
+# Model 5:  Neural Network 
+NN_scores <- accuracy(pre_nnetar$mean,test_precipitation)
+
+```
 
 ```{r}
 
-print(data.frame(
-  Model = c("ARIMA", "STL + ETS", "ARIMA + Fourier", "TBATS", "NNETAR"),
-  MAE = c(
-    accuracy(fc_arima, test_precipitation)["Test set", "MAE"],
-    accuracy(fc_stl_ets, test_precipitation)["Test set", "MAE"],
-    accuracy(fc_fourier, test_precipitation)["Test set", "MAE"],
-    accuracy(fc_tbats, test_precipitation)["Test set", "MAE"],
-    accuracy(fc_nnetar, test_precipitation)["Test set", "MAE"]
-  ),
-  RMSE = c(
-    accuracy(fc_arima, test_precipitation)["Test set", "RMSE"],
-    accuracy(fc_stl_ets, test_precipitation)["Test set", "RMSE"],
-    accuracy(fc_fourier, test_precipitation)["Test set", "RMSE"],
-    accuracy(fc_tbats, test_precipitation)["Test set", "RMSE"],
-    accuracy(fc_nnetar, test_precipitation)["Test set", "RMSE"]
-  ),
-  MAPE = c(
-    accuracy(fc_arima, test_precipitation)["Test set", "MAPE"],
-    accuracy(fc_stl_ets, test_precipitation)["Test set", "MAPE"],
-    accuracy(fc_fourier, test_precipitation)["Test set", "MAPE"],
-    accuracy(fc_tbats, test_precipitation)["Test set", "MAPE"],
-    accuracy(fc_nnetar, test_precipitation)["Test set", "MAPE"]
+#create data frame
+scores <- as.data.frame(
+  rbind(ARIMA_scores, ETS_scores, ARIMA_scores, TBATS_scores, NN_scores)
   )
-))
+row.names(scores) <- c("ARIMA", "STL+ETS", "ARIMA+Fourier","TBATS","NN")
 
-```
+#choose model with lowest RMSE
+best_model_index <- which.min(scores[,"RMSE"])
+cat("The best model by RMSE is:", row.names(scores[best_model_index,])) 
 
-
-
-
-OLD
-
-```{r}
-msts_monthly <- msts(monthly_data_long$Precipitation, 
-                     seasonal.periods =c(12, 365.25),
-                 start = c(min(monthly_data_long$YEAR), 1))
-
-autoplot(msts_monthly) +
-  ggtitle("Monthly Precipitation Time Series") +
-  xlab("Year") +
-  ylab("Precipitation (mm)") +
-  theme_minimal()
-
-par(mfrow=c(1,2))
-acf(msts_monthly, lag.max = 48, main="ACF of Monthly Precipitation")
-pacf(msts_monthly, lag.max = 48, main="PACF of Monthly Precipitation")
-par(mfrow=c(1,1))
-
-```
-
-## Testing and Training Data - Monthly
-```{r}
-
-# Training data: 1901-2020
-training_data_monthly <- window(msts_monthly, end=c(2020))
-
-# Test data: 2021-2024
-test_data_monthly <- window(ts_monthly, start=c(2021))
-
-autoplot(training_data_monthly)
-autoplot(test_data_monthly)
-
-```
-
-## Decomposing Time Series
-```{r}
-
-# Decompose
-decompose_monthly <- decompose(ts_monthly,"additive")
-plot(decompose_monthly)
-
-#Creating non-seasonal time series
-deseasonal_monthly <- seasadj(decompose_monthly)  
-
-```
-
-## ARIMA forecast
-```{r}
-
-SARIMA_autofit <- auto.arima(ts_monthly)
-print(SARIMA_autofit)
-
-SARIMA_forecast <- forecast(object = SARIMA_autofit, h = 240)
-plot(SARIMA_forecast)
-
-```
-
-## STL + ETS
-```{r}
-#Fit and forecast STL + ETS model to data
-ETS_fit <-  stlf(training_data_monthly,h=365)
-
-#Plot foresting results
-autoplot(ETS_fit) + ylab("Precipitation (mm)")
-
-#Plot model + observed data
-autoplot(msts_monthly) +
-  autolayer(ETS_fit, series="STL + ETS",PI=FALSE) +
-  ylab("Precipitation (mm)")
-
-```
-
-## ARIMA Fourier
-```{r}
-#Fit arima model with fourier terms as exogenous regressors
-# seasonal = FALSE is the same as P=D=Q=0
-# play with K by changing it to K=c(2,2), K=c(2,4), K=c(2,6), etc. The higher teh K the longer it will take to converge, because R will try more models.
-
-
-K <- c(2, 3) 
-
-ARIMA_Four_fit <- auto.arima(training_data_monthly, xreg = fourier(training_data_monthly, K = K))
-
-ARIMA_Four_for <- forecast(ARIMA_Four_fit,
-                           xreg = fourier(training_data_monthly, K = K, h = 12),
-                           h = 12)
-
-autoplot(ARIMA_Four_for) + ylab("Precipitation (mm)")
-
-#Plot model + observed data
-autoplot(msts_monthly) +
-  autolayer(ARIMA_Four_for, series="ARIMA_FOURIER",PI=FALSE) +
-  ylab("Precipitation (mm)")
-
-```
-training_data_monthly_ts <- ts(training_data_monthly, frequency = 12)
-
-ARIMA_Four_fit <- auto.arima(training_data_monthly, 
-                             seasonal=FALSE, 
-                             lambda=0,
-                             xreg=fourier(training_data_monthly_ts, 
-                                          K=2)
-                             )
-
-#Forecast with ARIMA fit
-#also need to specify h for fourier terms
-ARIMA_Four_for <- forecast(ARIMA_Four_fit,
-                           xreg=fourier(training_data_monthly_ts,
-                                        K=2,
-                                        h = 12),
-                           h = 12
-                           ) 
-
-
-autoplot(ARIMA_Four_for) + ylab("Precipitation (mm)")
-
-#Plot model + observed data
-autoplot(msts_monthly) +
-  autolayer(ARIMA_Four_for, series="ARIMA_FOURIER",PI=FALSE) +
-  ylab("Precipitation (mm)")
-
-
-
-## TBATS
-```{r}
-# TBATS can take time to fit
-TBATS_fit <- tbats(training_data_monthly)
-
-TBATS_for <- forecast(TBATS_fit, h=365)
-
-#Plot foresting results
-autoplot(TBATS_for) +
-  ylab("Precipitation (mm)") 
-
-#Plot model + observed data
-autoplot(training_data_monthly) +
-  autolayer(TBATS_for, series="TBATS",PI=FALSE)+
-  ylab("Precipitation (mm)") 
 ```
 
 ```{r}
 
-#You can play with the different values for p and P, you can also use xreg with Fourier term to model the multiple seasonality
-
-#NN_fit <- nnetar(ts_act_power_daily_train,p=1,P=1)
-NN_fit <- nnetar(training_data_monthly,
-                 p=1,
-                 P=0,
-                 xreg=fourier(training_data_monthly, K=2))
-
-#NN_for <- forecast(NN_fit, h=365) 
-NN_for <- forecast(NN_fit, 
-                   h=365,
-                   xreg=fourier(training_data_monthly, 
-                                          K=2,h=365))
-
-
-#Plot foresting results
-autoplot(NN_for) +
-  ylab("Precipitation (mm)") 
-
-
-#Plot model + observed data
-autoplot(ts_monthly) +
-  autolayer(NN_for, series="Neural Network",PI=FALSE)+
-  ylab("Precipitation (mm)") 
+kbl(scores, 
+      caption = "Forecast Accuracy for Precipitation in Colombia",
+      digits = array(5,ncol(scores))) %>%
+  kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position") %>%
+  #highlight model with lowest RMSE
+  kable_styling(latex_options="striped", stripe_index = which.min(scores[,"RMSE"]))
 
 ```
+
+
 
