@@ -166,3 +166,58 @@ print(data.frame(
   )
 ))
 ```
+
+
+```{r}
+
+calculate_all_metrics <- function(forecast_obj, test_data) {
+  metrics <- accuracy(forecast_obj, test_data)["Test set", ]
+  return(metrics)
+}
+
+accuracy_results <- data.frame(
+  Model = c("ARIMA", "STL + ETS", "ARIMA + Fourier", "TBATS", "NNETAR"),
+  ME = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "ME"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "ME"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "ME"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "ME"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "ME"]
+  ),
+  RMSE = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "RMSE"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "RMSE"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "RMSE"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "RMSE"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "RMSE"]
+  ),
+  MAE = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "MAE"]
+  ),
+  MAPE = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "MAPE"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "MAPE"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "MAPE"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "MAPE"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "MAPE"]
+  ),
+  MASE = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "MASE"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "MASE"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "MASE"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "MASE"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "MASE"]
+  )
+)
+
+accuracy_results_formatted <- accuracy_results %>%
+  arrange(RMSE) %>%  # Sort by RMSE (or any other preferred metric)
+  mutate(across(where(is.numeric), round, 3))  # Round numeric columns to 3 decimal places
+
+print(accuracy_results_formatted)
+```
+

@@ -137,14 +137,20 @@ plot(pre_nnetar, main = "NNETAR Forecast")
 ```
 
 ```{r}
-print(data.frame(
+
+calculate_all_metrics <- function(forecast_obj, test_data) {
+  metrics <- accuracy(forecast_obj, test_data)["Test set", ]
+  return(metrics)
+}
+
+accuracy_results <- data.frame(
   Model = c("ARIMA", "STL + ETS", "ARIMA + Fourier", "TBATS", "NNETAR"),
-  MAE = c(
-    accuracy(pre_arima, test_precipitation)["Test set", "MAE"],
-    accuracy(pre_stl_ets, test_precipitation)["Test set", "MAE"],
-    accuracy(pre_fourier, test_precipitation)["Test set", "MAE"],
-    accuracy(pre_tbats, test_precipitation)["Test set", "MAE"],
-    accuracy(pre_nnetar, test_precipitation)["Test set", "MAE"]
+  ME = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "ME"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "ME"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "ME"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "ME"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "ME"]
   ),
   RMSE = c(
     accuracy(pre_arima, test_precipitation)["Test set", "RMSE"],
@@ -153,12 +159,32 @@ print(data.frame(
     accuracy(pre_tbats, test_precipitation)["Test set", "RMSE"],
     accuracy(pre_nnetar, test_precipitation)["Test set", "RMSE"]
   ),
+  MAE = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "MAE"]
+  ),
   MAPE = c(
     accuracy(pre_arima, test_precipitation)["Test set", "MAPE"],
     accuracy(pre_stl_ets, test_precipitation)["Test set", "MAPE"],
     accuracy(pre_fourier, test_precipitation)["Test set", "MAPE"],
     accuracy(pre_tbats, test_precipitation)["Test set", "MAPE"],
     accuracy(pre_nnetar, test_precipitation)["Test set", "MAPE"]
+  ),
+  MASE = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "MASE"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "MASE"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "MASE"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "MASE"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "MASE"]
   )
-))
+)
+
+accuracy_results_formatted <- accuracy_results %>%
+  arrange(RMSE) %>%  # Sort by RMSE
+  mutate(across(where(is.numeric), round, 3))
+
+print(accuracy_results_formatted)
 ```
