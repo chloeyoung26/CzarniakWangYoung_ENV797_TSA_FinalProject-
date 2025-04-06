@@ -1,5 +1,164 @@
 ---
 title: "Argentina"
+authors: "Chloe, Weilin, and Gabby"
 output: html_document
+date: "2025-04-06"
 ---
 
+```{r package, message=FALSE}
+library(readxl)
+library(openxlsx)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(forecast)  
+library(Kendall)
+library(tseries)
+library(outliers)
+library(tidyverse)
+library(smooth)
+library(zoo)
+library(kableExtra)
+library(writexl)
+library(tsibble)
+library(fable)
+library(fable.prophet)
+```
+
+## Importing Data
+```{r}
+#importing data
+Argentina_pre_uncleaned <- read_excel("../data/Argentina_precipitation.xlsx")
+colSums(is.na(Argentina_pre_uncleaned))
+Argentina_pre_uncleaned$DJF[is.na(Argentina_pre_uncleaned$DJF)] <- mean(Argentina_pre_uncleaned$DJF, na.rm = TRUE)
+colSums(is.na(Argentina_pre_uncleaned))
+
+write.csv(Argentina_pre_uncleaned, "../data/processed_argentina_precipitation.csv", row.names = FALSE)
+
+argentina_pre <- read_csv("../data/processed_argentina_precipitation.csv")
+
+head(argentina_pre)
+nvar <- ncol(argentina_pre) - 1
+nobs <- nrow(argentina_pre)
+```
+
+## Initial Plots & Time Series - Monthly
+```{r}
+monthly_data <- argentina_pre %>%
+  select(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC)
+
+monthly_data_long <- monthly_data %>%
+  pivot_longer(cols = JAN:DEC, names_to = "Month", values_to = "Precipitation")
+
+monthly_data_long <- monthly_data_long %>%
+  mutate(Month_Num = match(tolower(Month), tolower(month.abb)),
+         Date = as.Date(paste(YEAR, Month_Num, "01", sep = "-")),
+         .before = 1) %>%
+  arrange(Date)
+
+write.csv(monthly_data_long, "../data/argentinamonthly_data_long.csv", row.names = FALSE)
+
+ts_monthly <- ts(monthly_data_long$Precipitation, 
+                 start = c(1901,1), frequency = 12)
+```
+
+## Initial Plots
+```{r}
+autoplot(ts_monthly) +
+  ggtitle("Monthly Precipitation Time Series") +
+  xlab("Year") +
+  ylab("Precipitation (mm)") +
+  theme_minimal()
+
+par(mfrow=c(1,2))
+acf(ts_monthly, lag.max = 48, main="ACF of Monthly Precipitation")
+pacf(ts_monthly, lag.max = 48, main="PACF of Monthly Precipitation")
+par(mfrow=c(1,1))
+```
+
+## Testing and Training Data
+```{r}
+train_precipitation <- window(ts_monthly, end = c(2020, 12))
+
+h <- 240
+
+total_months <- length(ts_monthly)
+
+test_precipitation <- window(ts_monthly, start = c(2021, 1), end = c(2024, 12))
+```
+
+## Decomposing Time Series
+```{r}
+# Decompose
+decompose_monthly <- decompose(ts_monthly,"additive")
+plot(decompose_monthly)
+
+#Creating non-seasonal time series
+deseasonal_monthly <- seasadj(decompose_monthly)  
+```
+
+## ARIMA
+```{r}
+fit_arima <- auto.arima(train_precipitation)
+pre_arima <- forecast(fit_arima, h = h)
+
+plot(pre_arima, main = "ARIMA Forecast")
+```
+
+## STL + ETS
+```{r}
+pre_stl_ets <- stlf(train_precipitation, h = h, method = "ets")
+plot(pre_stl_ets, main = "STL + ETS Forecast")
+```
+
+## ARIMA + Fourier terms
+```{r}
+K <- 6
+fourier_train <- fourier(train_precipitation, K = K)
+fourier_future <- fourier(train_precipitation, K = K, h = h)
+fit_fourier <- auto.arima(train_precipitation, xreg = fourier_train, seasonal = FALSE)
+pre_fourier <- forecast(fit_fourier, xreg = fourier_future, h = h)
+
+plot(pre_fourier, main = "ARIMA + Fourier Forecast")
+```
+
+## TBATS
+```{r}
+fit_tbats <- tbats(train_precipitation)
+pre_tbats <- forecast(fit_tbats, h = h)
+plot(pre_tbats, main = "TBATS Forecast")
+```
+
+## Neural Network
+```{r}
+fit_nnetar <- nnetar(train_precipitation)
+pre_nnetar <- forecast(fit_nnetar, h = h)
+plot(pre_nnetar, main = "NNETAR Forecast")
+```
+
+```{r}
+print(data.frame(
+  Model = c("ARIMA", "STL + ETS", "ARIMA + Fourier", "TBATS", "NNETAR"),
+  MAE = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "MAE"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "MAE"]
+  ),
+  RMSE = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "RMSE"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "RMSE"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "RMSE"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "RMSE"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "RMSE"]
+  ),
+  MAPE = c(
+    accuracy(pre_arima, test_precipitation)["Test set", "MAPE"],
+    accuracy(pre_stl_ets, test_precipitation)["Test set", "MAPE"],
+    accuracy(pre_fourier, test_precipitation)["Test set", "MAPE"],
+    accuracy(pre_tbats, test_precipitation)["Test set", "MAPE"],
+    accuracy(pre_nnetar, test_precipitation)["Test set", "MAPE"]
+  )
+))
+```
