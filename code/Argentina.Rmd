@@ -5,7 +5,8 @@ output: html_document
 date: "2025-04-06"
 ---
 
-```{r package, message=FALSE}
+```{r Load packages, message=FALSE}
+
 library(readxl)
 library(openxlsx)
 library(dplyr)
@@ -23,28 +24,38 @@ library(writexl)
 library(tsibble)
 library(fable)
 library(fable.prophet)
+
 ```
 
 ## Importing Data
-```{r}
-#importing data
-Argentina_pre_uncleaned <- read_excel("../data/Argentina_precipitation.xlsx")
-colSums(is.na(Argentina_pre_uncleaned))
-Argentina_pre_uncleaned$DJF[is.na(Argentina_pre_uncleaned$DJF)] <- mean(Argentina_pre_uncleaned$DJF, na.rm = TRUE)
-colSums(is.na(Argentina_pre_uncleaned))
+```{r Import data}
 
-write.csv(Argentina_pre_uncleaned, "../data/processed_argentina_precipitation.csv", row.names = FALSE)
+# Read Arg data from Excel file
+arg_pre_uncleaned <- read.xlsx(xlsxFile = './data/Argentina_precipitation.xlsx')
 
-argentina_pre <- read_csv("../data/processed_argentina_precipitation.csv")
+# Check for NAs
+colSums(is.na(arg_pre_uncleaned)) # DJF has one NA
 
-head(argentina_pre)
-nvar <- ncol(argentina_pre) - 1
-nobs <- nrow(argentina_pre)
+# Interpolating a value for mean
+arg_pre_uncleaned$DJF[is.na(arg_pre_uncleaned$DJF)] <- mean(arg_pre_uncleaned$DJF, 
+                                                                  na.rm = TRUE)
+colSums(is.na(arg_pre_uncleaned))
+
+write.csv(arg_pre_uncleaned, './data/processed_argentina_precipitation.csv', 
+          row.names = FALSE)
+
+arg_pre <- read_csv('./data/processed_argentina_precipitation.csv')
+
+# Inspect Brazil precipitation data
+head(arg_pre)
+nvar <- ncol(arg_pre) - 1
+nobs <- nrow(arg_pre)
 ```
 
-## Initial Plots & Time Series - Monthly
-```{r}
-monthly_data <- argentina_pre %>%
+## Data wrangling 
+```{r Data wrangling }
+
+monthly_data <- arg_pre %>%
   select(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC)
 
 monthly_data_long <- monthly_data %>%
@@ -56,14 +67,21 @@ monthly_data_long <- monthly_data_long %>%
          .before = 1) %>%
   arrange(Date)
 
-write.csv(monthly_data_long, "../data/argentinamonthly_data_long.csv", row.names = FALSE)
+write.csv(monthly_data_long, './data/argentinamonthly_data_long.csv', row.names = FALSE)
+
+```
+
+## Creating a ts object
+```{r Creating a ts object for monthly precipitation data}
 
 ts_monthly <- ts(monthly_data_long$Precipitation, 
                  start = c(1901,1), frequency = 12)
+
 ```
 
 ## Initial Plots
-```{r}
+```{r Initial ts plots}
+
 autoplot(ts_monthly) +
   ggtitle("Monthly Precipitation Time Series") +
   xlab("Year") +
@@ -73,8 +91,11 @@ autoplot(ts_monthly) +
 par(mfrow=c(1,2))
 acf(ts_monthly, lag.max = 48, main="ACF of Monthly Precipitation")
 pacf(ts_monthly, lag.max = 48, main="PACF of Monthly Precipitation")
-par(mfrow=c(1,1))
+# par(mfrow=c(1,1))
+
 ```
+> **Interpretation:** Argentina's precipitation data seems to show seasonality judging by the equally-spaced wave pattern. There is an intense wet and dry season spike. Upon first glance, there does not seem to be a clear increasing or decreasing trend component. The ACF, which shows a wave-like pattern, indicates the possibility of what we'd certainly expect to be a seasonal component. The PACF shows a wave-like pattern, but the spikes of the pattern decay as lags progress.
+
 
 ## Testing and Training Data
 ```{r}
