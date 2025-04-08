@@ -1,6 +1,6 @@
 ---
 title: "Brazil"
-authors: "Chloe, Weilin, and Gabby"
+authors: "Chloe, Weilin, and Gaby"
 output: html_document
 date: "2025-04-06"
 ---
@@ -9,7 +9,8 @@ date: "2025-04-06"
 knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=60), tidy=TRUE) 
 ```
 
-```{r package, message=FALSE}
+```{r Load packages, message=FALSE}
+
 library(readxl)
 library(openxlsx)
 library(dplyr)
@@ -27,23 +28,33 @@ library(writexl)
 library(tsibble)
 library(fable)
 library(fable.prophet)
+
 ```
 
 ## Importing Data
-```{r}
-#importing data
-Brazil_pre_uncleaned <- read_excel("../data/brazil_precipitation.xlsx")
-colSums(is.na(Brazil_pre_uncleaned))
-Brazil_pre_uncleaned$DJF[is.na(Brazil_pre_uncleaned$DJF)] <- mean(Brazil_pre_uncleaned$DJF, na.rm = TRUE)
-colSums(is.na(Brazil_pre_uncleaned))
+```{r Import data}
 
-write.csv(Brazil_pre_uncleaned, "../data/processed_brazil_precipitation.csv", row.names = FALSE)
+# Read Brazil data from Excel file
+brazil_pre_uncleaned <- read.xlsx(xlsxFile = './data/brazil_precipitation.xlsx')
 
-brazil_pre <- read_csv("../data/processed_brazil_precipitation.csv")
+# Check for NAs
+colSums(is.na(brazil_pre_uncleaned)) # DJF has one NA
 
+# Interpolating a value for mean
+brazil_pre_uncleaned$DJF[is.na(brazil_pre_uncleaned$DJF)] <- mean(brazil_pre_uncleaned$DJF, 
+                                                                  na.rm = TRUE)
+colSums(is.na(brazil_pre_uncleaned))
+
+write.csv(brazil_pre_uncleaned, './data/processed_brazil_precipitation.csv', 
+          row.names = FALSE)
+
+brazil_pre <- read_csv('./data/processed_brazil_precipitation.csv')
+
+# Inspect Brazil precipitation data
 head(brazil_pre)
 nvar <- ncol(brazil_pre) - 1
 nobs <- nrow(brazil_pre)
+
 ```
 
 ## Initial Plots & Time Series - Monthly

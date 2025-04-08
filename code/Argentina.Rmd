@@ -1,6 +1,6 @@
 ---
 title: "Argentina"
-authors: "Chloe, Weilin, and Gabby"
+authors: "Chloe, Weilin, and Gaby"
 output: html_document
 date: "2025-04-06"
 ---
