@@ -1,0 +1,228 @@
+---
+title: "Brazil_code"
+authors: "Chloe, Weilin, and Gaby"
+output: pdf_document
+date: "2025-04-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=60), tidy=TRUE) 
+```
+
+```{r package, message=FALSE}
+library(readxl)
+library(openxlsx)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(forecast)  
+library(Kendall)
+library(tseries)
+library(outliers)
+library(tidyverse)
+library(smooth)
+library(zoo)
+library(kableExtra)
+library(writexl)
+library(tsibble)
+library(fable)
+library(fable.prophet)
+```
+
+## Importing Data
+```{r}
+# Read Brazil data from Excel file
+brazil_pre_uncleaned <- read.xlsx(xlsxFile = './data/brazil_precipitation.xlsx')
+
+# Check for NAs
+colSums(is.na(brazil_pre_uncleaned)) # DJF has one NA
+
+# Interpolating a value for mean
+brazil_pre_uncleaned$DJF[is.na(brazil_pre_uncleaned$DJF)] <- mean(brazil_pre_uncleaned$DJF, 
+                                                                 na.rm = TRUE)
+colSums(is.na(brazil_pre_uncleaned))
+
+# Save processed data
+write.csv(brazil_pre_uncleaned, './data/processed_brazil_precipitation.csv', 
+          row.names = FALSE)
+
+brazil_pre <- read_csv('./data/processed_brazil_precipitation.csv')
+
+# Inspect Brazil precipitation data
+head(brazil_pre)
+nvar <- ncol(brazil_pre) - 1
+nobs <- nrow(brazil_pre)
+```
+
+## Data Cleaning & TS Creation
+```{r}
+monthly_data <- brazil_pre %>%
+  select(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC)
+
+monthly_data_long <- monthly_data %>%
+  pivot_longer(cols = JAN:DEC, names_to = "Month", values_to = "Precipitation")
+
+monthly_data_long <- monthly_data_long %>%
+  mutate(Month_Num = match(tolower(Month), tolower(month.abb)),
+         Date = as.Date(paste(YEAR, Month_Num, "01", sep = "-")),
+         .before = 1) %>%
+  arrange(Date)
+
+write.csv(monthly_data_long, './data/brazilmonthly_data_long.csv', row.names = FALSE)
+
+ts_monthly <- ts(monthly_data_long$Precipitation, 
+                 start = c(1901,1), frequency = 12)
+```
+
+## Initial Plots
+```{r}
+autoplot(ts_monthly) +
+  ggtitle("Monthly Precipitation Time Series (Brazil)") +
+  xlab("Year") +
+  ylab("Precipitation (mm)") +
+  theme_minimal()
+
+par(mfrow=c(1,2))
+acf(ts_monthly, lag.max = 48, main="ACF (Brazil)")
+pacf(ts_monthly, lag.max = 48, main="PACF (Brazil)")
+par(mfrow=c(1,1))
+```
+
+## Testing and Training
+```{r}
+train_precipitation <- window(ts_monthly, end = c(2020, 12))
+
+h <- 360 # Changed from 240 to 360 to match Colombia
+
+total_months <- length(ts_monthly)
+
+test_precipitation <- window(ts_monthly, start = c(2021, 1), end = c(2024, 12))
+
+autoplot(train_precipitation)
+autoplot(test_precipitation)
+```
+
+## Decomposing Time Series
+```{r}
+# Decompose
+decompose_monthly <- decompose(ts_monthly,"additive")
+plot(decompose_monthly)
+
+#Creating non-seasonal time series
+deseasonal_monthly <- seasadj(decompose_monthly)  
+```
+
+## ARIMA
+```{r}
+fit_arima <- auto.arima(train_precipitation)
+pre_arima <- forecast(fit_arima, h = 360)
+
+plot(pre_arima, main = "ARIMA Forecast (Brazil)")
+
+#Plot model + observed data
+autoplot(ts_monthly) +
+  autolayer(pre_arima, series="ARIMA",PI=FALSE) +
+  ylab("Precipitation (mm)")
+```
+
+## STL + ETS
+```{r}
+pre_stl_ets <- stlf(train_precipitation, h = 360, method = "ets")
+plot(pre_stl_ets, main = "STL + ETS Forecast (Brazil)")
+
+#Plot model + observed data
+autoplot(ts_monthly) +
+  autolayer(pre_stl_ets, series="STL + ETS",PI=FALSE) +
+  ylab("Precipitation (mm)")
+```
+
+## ARIMA + Fourier terms
+```{r}
+K <- 6
+fourier_train <- fourier(train_precipitation, K = K)
+fourier_future <- fourier(train_precipitation, K = K, h = 360)
+fit_fourier <- auto.arima(train_precipitation, xreg = fourier_train, seasonal = FALSE)
+pre_fourier <- forecast(fit_fourier, xreg = fourier_future, h = 360)
+
+plot(pre_fourier, main = "ARIMA + Fourier Forecast (Brazil)")
+
+#Plot model + observed data
+autoplot(ts_monthly) +
+  autolayer(pre_fourier, series="ARIMA + Fourier terms",PI=FALSE) +
+  ylab("Precipitation (mm)")
+```
+
+## TBATS
+```{r}
+fit_tbats <- tbats(train_precipitation)
+pre_tbats <- forecast(fit_tbats, h = 360)
+plot(pre_tbats, main = "TBATS Forecast (Brazil)")
+
+#Plot model + observed data
+autoplot(ts_monthly) +
+  autolayer(pre_tbats, series="TBATS",PI=FALSE) +
+  ylab("Precipitation (mm)")
+```
+
+## Neural Network
+```{r}
+fit_nnetar <- nnetar(train_precipitation)
+pre_nnetar <- forecast(fit_nnetar, h = 360)
+plot(pre_nnetar, main = "NNETAR Forecast (Brazil)")
+
+#Plot model + observed data
+autoplot(ts_monthly) +
+  autolayer(pre_nnetar, series="Neural Network",PI=FALSE) +
+  ylab("Precipitation (mm)")
+```
+
+## Scores
+```{r}
+#Model 1: ARIMA
+ARIMA_scores <- accuracy(pre_arima$mean,test_precipitation)  
+
+#Model 2: STL + ETS
+ETS_scores <- accuracy(pre_stl_ets$mean,test_precipitation)  
+
+#Model 3: ARIMA + Fourier 
+FOURIER_scores <- accuracy(pre_fourier$mean,test_precipitation)
+
+# Model 4: TBATS 
+TBATS_scores <- accuracy(pre_tbats$mean,test_precipitation)
+
+# Model 5: Neural Network 
+NN_scores <- accuracy(pre_nnetar$mean,test_precipitation)
+```
+
+```{r}
+#create data frame
+scores <- as.data.frame(
+  rbind(ARIMA_scores, ETS_scores, FOURIER_scores, TBATS_scores, NN_scores)
+  )
+row.names(scores) <- c("ARIMA", "STL+ETS", "ARIMA+Fourier","TBATS","NN")
+
+#choose model with lowest RMSE
+best_model_index <- which.min(scores[,"RMSE"])
+cat("The best model by RMSE is:", row.names(scores[best_model_index,])) 
+```
+
+```{r}
+kbl(scores, 
+      caption = "Forecast Accuracy for Precipitation in Brazil",
+      digits = array(5,ncol(scores))) %>%
+  kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position") %>%
+  #highlight model with lowest RMSE
+  kable_styling(latex_options="striped", stripe_index = which.min(scores[,"RMSE"]))
+```
+
+## Visual Model Comparison
+```{r}
+autoplot(test_precipitation) +
+  autolayer(pre_arima, PI=FALSE, series="ARIMA") +
+  autolayer(pre_stl_ets, PI=FALSE, series="STL+ETS") +
+  autolayer(pre_fourier, PI=FALSE, series="ARIMA + Fourier") +
+  autolayer(pre_tbats,PI=FALSE, series="TBATS") +
+  autolayer(pre_nnetar,PI=FALSE, series="NN") +
+  xlab("Year") + ylab("Precipitation(mm)") + 
+  guides(colour=guide_legend(title="Forecast"))
+```
