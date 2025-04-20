@@ -1,0 +1,530 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Colombia\_code},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Colombia\_code}
+\author{}
+\date{\vspace{-2.5em}2025-04-02}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(readxl)}
+\FunctionTok{library}\NormalTok{(openxlsx)}
+\FunctionTok{library}\NormalTok{(dplyr)}
+\FunctionTok{library}\NormalTok{(lubridate)}
+\FunctionTok{library}\NormalTok{(ggplot2)}
+\FunctionTok{library}\NormalTok{(forecast)}
+\FunctionTok{library}\NormalTok{(Kendall)}
+\FunctionTok{library}\NormalTok{(tseries)}
+\FunctionTok{library}\NormalTok{(outliers)}
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\FunctionTok{library}\NormalTok{(smooth)}
+\FunctionTok{library}\NormalTok{(zoo)}
+\FunctionTok{library}\NormalTok{(kableExtra)}
+\FunctionTok{library}\NormalTok{(writexl)}
+\FunctionTok{library}\NormalTok{(tsibble)}
+\FunctionTok{library}\NormalTok{(fable)}
+\FunctionTok{library}\NormalTok{(fable.prophet)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Importing Data}\label{importing-data}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# importing data}
+\NormalTok{Colombia\_pre\_uncleaned }\OtherTok{\textless{}{-}} \FunctionTok{read\_excel}\NormalTok{(}\StringTok{"../data/Colombia\_precipitation.xlsx"}\NormalTok{)  }\CommentTok{\# I changed the to the relative address }
+
+\FunctionTok{colSums}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(Colombia\_pre\_uncleaned))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## YEAR  JAN  FEB  MAR  APR  MAY  JUN  JUL  AUG  SEP  OCT  NOV  DEC  MAM  JJA  SON 
+##    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0 
+##  DJF  ANN 
+##    1    0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Colombia\_pre\_uncleaned}\SpecialCharTok{$}\NormalTok{DJF[}\FunctionTok{is.na}\NormalTok{(Colombia\_pre\_uncleaned}\SpecialCharTok{$}\NormalTok{DJF)] }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Colombia\_pre\_uncleaned}\SpecialCharTok{$}\NormalTok{DJF,}
+    \AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\FunctionTok{colSums}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(Colombia\_pre\_uncleaned))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## YEAR  JAN  FEB  MAR  APR  MAY  JUN  JUL  AUG  SEP  OCT  NOV  DEC  MAM  JJA  SON 
+##    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0 
+##  DJF  ANN 
+##    0    0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{write.csv}\NormalTok{(Colombia\_pre\_uncleaned, }\StringTok{"../data/processed\_colombia\_precipitation.csv"}\NormalTok{,}
+    \AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
+
+\NormalTok{colombia\_pre }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{"../data/processed\_colombia\_precipitation.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Rows: 124 Columns: 18
+## -- Column specification --------------------------------------------------------
+## Delimiter: ","
+## dbl (18): YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC, ...
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(colombia\_pre)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 6 x 18
+##    YEAR   JAN   FEB   MAR   APR   MAY   JUN   JUL   AUG   SEP   OCT   NOV   DEC
+##   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+## 1  1901  90.1 102.   151.  209.  278.  256.  312.  329.  230.  288.  236.  128.
+## 2  1902 138.   96.9  188.  230.  261.  254.  227.  226.  225   233.  198.  119.
+## 3  1903  99.7  98.3  136.  230.  278.  336.  226.  316.  223.  226.  215.  148.
+## 4  1904 111   112.   189.  271.  304   250.  264.  228.  219.  262.  169.  114.
+## 5  1905 112.   87.7  142.  239.  286.  273.  248.  211.  273   257.  231.  163.
+## 6  1906  90   108.   147.  271.  297.  309.  287.  238.  195.  252   192.  130.
+## # i 5 more variables: MAM <dbl>, JJA <dbl>, SON <dbl>, DJF <dbl>, ANN <dbl>
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nvar }\OtherTok{\textless{}{-}} \FunctionTok{ncol}\NormalTok{(colombia\_pre) }\SpecialCharTok{{-}} \DecValTok{1}
+\NormalTok{nobs }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(colombia\_pre)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Data Cleaning \& TS
+Creation}\label{data-cleaning-ts-creation}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{monthly\_data }\OtherTok{\textless{}{-}}\NormalTok{ colombia\_pre }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{select}\NormalTok{(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP,}
+\NormalTok{        OCT, NOV, DEC)}
+
+\NormalTok{monthly\_data\_long }\OtherTok{\textless{}{-}}\NormalTok{ monthly\_data }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{pivot\_longer}\NormalTok{(}\AttributeTok{cols =}\NormalTok{ JAN}\SpecialCharTok{:}\NormalTok{DEC, }\AttributeTok{names\_to =} \StringTok{"Month"}\NormalTok{, }\AttributeTok{values\_to =} \StringTok{"Precipitation"}\NormalTok{)}
+
+\NormalTok{monthly\_data\_long }\OtherTok{\textless{}{-}}\NormalTok{ monthly\_data\_long }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Month\_Num =} \FunctionTok{match}\NormalTok{(}\FunctionTok{tolower}\NormalTok{(Month), }\FunctionTok{tolower}\NormalTok{(month.abb)),}
+        \AttributeTok{Date =} \FunctionTok{as.Date}\NormalTok{(}\FunctionTok{paste}\NormalTok{(YEAR, Month\_Num, }\StringTok{"01"}\NormalTok{, }\AttributeTok{sep =} \StringTok{"{-}"}\NormalTok{)),}
+        \AttributeTok{.before =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{arrange}\NormalTok{(Date)}
+
+\FunctionTok{write.csv}\NormalTok{(monthly\_data\_long, }\StringTok{"../data/colombiamonthly\_data\_long.csv"}\NormalTok{,}
+    \AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
+
+\NormalTok{ts\_monthly }\OtherTok{\textless{}{-}} \FunctionTok{ts}\NormalTok{(monthly\_data\_long}\SpecialCharTok{$}\NormalTok{Precipitation, }\AttributeTok{start =} \FunctionTok{c}\NormalTok{(}\DecValTok{1901}\NormalTok{,}
+    \DecValTok{1}\NormalTok{), }\AttributeTok{frequency =} \DecValTok{12}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Initial Plots}\label{initial-plots}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{autoplot}\NormalTok{(ts\_monthly) }\SpecialCharTok{+} \FunctionTok{ggtitle}\NormalTok{(}\StringTok{"Monthly Precipitation Time Series (Colombia)"}\NormalTok{) }\SpecialCharTok{+}
+    \FunctionTok{xlab}\NormalTok{(}\StringTok{"Year"}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\StringTok{"Precipitation (mm)"}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{theme\_minimal}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-3-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{))}
+\FunctionTok{acf}\NormalTok{(ts\_monthly, }\AttributeTok{lag.max =} \DecValTok{48}\NormalTok{, }\AttributeTok{main =} \StringTok{"ACF (Colombia)"}\NormalTok{)}
+\FunctionTok{pacf}\NormalTok{(ts\_monthly, }\AttributeTok{lag.max =} \DecValTok{48}\NormalTok{, }\AttributeTok{main =} \StringTok{"PACF (Colombia)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-3-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Testing and Training}\label{testing-and-training}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{train\_precipitation }\OtherTok{\textless{}{-}} \FunctionTok{window}\NormalTok{(ts\_monthly, }\AttributeTok{end =} \FunctionTok{c}\NormalTok{(}\DecValTok{2020}\NormalTok{, }\DecValTok{12}\NormalTok{))}
+
+\NormalTok{h }\OtherTok{\textless{}{-}} \DecValTok{240}
+
+\NormalTok{total\_months }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(ts\_monthly)}
+
+\NormalTok{test\_precipitation }\OtherTok{\textless{}{-}} \FunctionTok{window}\NormalTok{(ts\_monthly, }\AttributeTok{start =} \FunctionTok{c}\NormalTok{(}\DecValTok{2021}\NormalTok{, }\DecValTok{1}\NormalTok{),}
+    \AttributeTok{end =} \FunctionTok{c}\NormalTok{(}\DecValTok{2024}\NormalTok{, }\DecValTok{12}\NormalTok{))}
+
+\FunctionTok{autoplot}\NormalTok{(train\_precipitation)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{autoplot}\NormalTok{(test\_precipitation)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-4-2.pdf}
+
+\subsection{Decomposing Time Series}\label{decomposing-time-series}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Decompose}
+\NormalTok{decompose\_monthly }\OtherTok{\textless{}{-}} \FunctionTok{decompose}\NormalTok{(ts\_monthly, }\StringTok{"additive"}\NormalTok{)}
+\FunctionTok{plot}\NormalTok{(decompose\_monthly)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Creating non{-}seasonal time series}
+\NormalTok{deseasonal\_monthly }\OtherTok{\textless{}{-}} \FunctionTok{seasadj}\NormalTok{(decompose\_monthly)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{ARIMA}\label{arima}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit\_arima }\OtherTok{\textless{}{-}} \FunctionTok{auto.arima}\NormalTok{(train\_precipitation)}
+\NormalTok{pre\_arima }\OtherTok{\textless{}{-}} \FunctionTok{forecast}\NormalTok{(fit\_arima, }\AttributeTok{h =} \DecValTok{360}\NormalTok{)}
+
+\FunctionTok{plot}\NormalTok{(pre\_arima, }\AttributeTok{main =} \StringTok{"ARIMA Forecast (Colombia)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Plot model + observed data}
+\FunctionTok{autoplot}\NormalTok{(ts\_monthly) }\SpecialCharTok{+} \FunctionTok{autolayer}\NormalTok{(pre\_arima, }\AttributeTok{series =} \StringTok{"ARIMA"}\NormalTok{,}
+    \AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\StringTok{"Precipitation (mm)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-6-2.pdf}
+
+\subsection{STL + ETS}\label{stl-ets}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pre\_stl\_ets }\OtherTok{\textless{}{-}} \FunctionTok{stlf}\NormalTok{(train\_precipitation, }\AttributeTok{h =} \DecValTok{360}\NormalTok{, }\AttributeTok{method =} \StringTok{"ets"}\NormalTok{)}
+\FunctionTok{plot}\NormalTok{(pre\_stl\_ets, }\AttributeTok{main =} \StringTok{"STL + ETS Forecast (Colombia)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Plot model + observed data}
+\FunctionTok{autoplot}\NormalTok{(ts\_monthly) }\SpecialCharTok{+} \FunctionTok{autolayer}\NormalTok{(pre\_stl\_ets, }\AttributeTok{series =} \StringTok{"STL + ETS"}\NormalTok{,}
+    \AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\StringTok{"Precipitation (mm)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-7-2.pdf}
+
+\subsection{ARIMA + Fourier terms}\label{arima-fourier-terms}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{K }\OtherTok{\textless{}{-}} \DecValTok{6}
+\NormalTok{fourier\_train }\OtherTok{\textless{}{-}} \FunctionTok{fourier}\NormalTok{(train\_precipitation, }\AttributeTok{K =}\NormalTok{ K)}
+\NormalTok{fourier\_future }\OtherTok{\textless{}{-}} \FunctionTok{fourier}\NormalTok{(train\_precipitation, }\AttributeTok{K =}\NormalTok{ K, }\AttributeTok{h =} \DecValTok{360}\NormalTok{)}
+\NormalTok{fit\_fourier }\OtherTok{\textless{}{-}} \FunctionTok{auto.arima}\NormalTok{(train\_precipitation, }\AttributeTok{xreg =}\NormalTok{ fourier\_train,}
+    \AttributeTok{seasonal =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{pre\_fourier }\OtherTok{\textless{}{-}} \FunctionTok{forecast}\NormalTok{(fit\_fourier, }\AttributeTok{xreg =}\NormalTok{ fourier\_future, }\AttributeTok{h =} \DecValTok{360}\NormalTok{)}
+
+\FunctionTok{plot}\NormalTok{(pre\_fourier, }\AttributeTok{main =} \StringTok{"ARIMA + Fourier Forecast (Colombia)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Plot model + observed data}
+\FunctionTok{autoplot}\NormalTok{(ts\_monthly) }\SpecialCharTok{+} \FunctionTok{autolayer}\NormalTok{(pre\_fourier, }\AttributeTok{series =} \StringTok{"ARIMA + Fourier terms"}\NormalTok{,}
+    \AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\StringTok{"Precipitation (mm)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-8-2.pdf}
+
+\subsection{TBATS}\label{tbats}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit\_tbats }\OtherTok{\textless{}{-}} \FunctionTok{tbats}\NormalTok{(train\_precipitation)}
+\NormalTok{pre\_tbats }\OtherTok{\textless{}{-}} \FunctionTok{forecast}\NormalTok{(fit\_tbats, }\AttributeTok{h =} \DecValTok{360}\NormalTok{)}
+\FunctionTok{plot}\NormalTok{(pre\_tbats, }\AttributeTok{main =} \StringTok{"TBATS Forecast (Colombia)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-9-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Plot model + observed data}
+\FunctionTok{autoplot}\NormalTok{(ts\_monthly) }\SpecialCharTok{+} \FunctionTok{autolayer}\NormalTok{(pre\_tbats, }\AttributeTok{series =} \StringTok{"TBATS"}\NormalTok{,}
+    \AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\StringTok{"Precipitation (mm)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-9-2.pdf}
+
+\subsection{Neural Network}\label{neural-network}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit\_nnetar }\OtherTok{\textless{}{-}} \FunctionTok{nnetar}\NormalTok{(train\_precipitation)}
+\NormalTok{pre\_nnetar }\OtherTok{\textless{}{-}} \FunctionTok{forecast}\NormalTok{(fit\_nnetar, }\AttributeTok{h =} \DecValTok{360}\NormalTok{)}
+\FunctionTok{plot}\NormalTok{(pre\_nnetar, }\AttributeTok{main =} \StringTok{"NNETAR Forecast (Colombia)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Plot model + observed data}
+\FunctionTok{autoplot}\NormalTok{(ts\_monthly) }\SpecialCharTok{+} \FunctionTok{autolayer}\NormalTok{(pre\_nnetar, }\AttributeTok{series =} \StringTok{"Neural Network"}\NormalTok{,}
+    \AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\StringTok{"Precipitation (mm)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-10-2.pdf}
+
+\subsection{Scores}\label{scores}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Model 1: ARIMA}
+\NormalTok{ARIMA\_scores }\OtherTok{\textless{}{-}} \FunctionTok{accuracy}\NormalTok{(pre\_arima}\SpecialCharTok{$}\NormalTok{mean, test\_precipitation)}
+
+\CommentTok{\# Model 2: STL + ETS}
+\NormalTok{ETS\_scores }\OtherTok{\textless{}{-}} \FunctionTok{accuracy}\NormalTok{(pre\_stl\_ets}\SpecialCharTok{$}\NormalTok{mean, test\_precipitation)}
+
+\CommentTok{\# Model 3: ARIMA + Fourier}
+\NormalTok{ARIMA\_scores }\OtherTok{\textless{}{-}} \FunctionTok{accuracy}\NormalTok{(pre\_fourier}\SpecialCharTok{$}\NormalTok{mean, test\_precipitation)}
+
+\CommentTok{\# Model 4: TBATS}
+\NormalTok{TBATS\_scores }\OtherTok{\textless{}{-}} \FunctionTok{accuracy}\NormalTok{(pre\_tbats}\SpecialCharTok{$}\NormalTok{mean, test\_precipitation)}
+
+\CommentTok{\# Model 5: Neural Network}
+\NormalTok{NN\_scores }\OtherTok{\textless{}{-}} \FunctionTok{accuracy}\NormalTok{(pre\_nnetar}\SpecialCharTok{$}\NormalTok{mean, test\_precipitation)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# create data frame}
+\NormalTok{scores }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(}\FunctionTok{rbind}\NormalTok{(ARIMA\_scores, ETS\_scores, ARIMA\_scores,}
+\NormalTok{    TBATS\_scores, NN\_scores))}
+\FunctionTok{row.names}\NormalTok{(scores) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"ARIMA"}\NormalTok{, }\StringTok{"STL+ETS"}\NormalTok{, }\StringTok{"ARIMA+Fourier"}\NormalTok{, }\StringTok{"TBATS"}\NormalTok{,}
+    \StringTok{"NN"}\NormalTok{)}
+
+\CommentTok{\# choose model with lowest RMSE}
+\NormalTok{best\_model\_index }\OtherTok{\textless{}{-}} \FunctionTok{which.min}\NormalTok{(scores[, }\StringTok{"RMSE"}\NormalTok{])}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"The best model by RMSE is:"}\NormalTok{, }\FunctionTok{row.names}\NormalTok{(scores[best\_model\_index,}
+\NormalTok{    ]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## The best model by RMSE is: NN
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kbl}\NormalTok{(scores, }\AttributeTok{caption =} \StringTok{"Forecast Accuracy for Precipitation in Colombia"}\NormalTok{,}
+    \AttributeTok{digits =} \FunctionTok{array}\NormalTok{(}\DecValTok{5}\NormalTok{, }\FunctionTok{ncol}\NormalTok{(scores))) }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{full\_width =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{position =} \StringTok{"center"}\NormalTok{, }\AttributeTok{latex\_options =} \StringTok{"hold\_position"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+    \CommentTok{\# highlight model with lowest RMSE}
+\FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{latex\_options =} \StringTok{"striped"}\NormalTok{, }\AttributeTok{stripe\_index =} \FunctionTok{which.min}\NormalTok{(scores[,}
+    \StringTok{"RMSE"}\NormalTok{]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[!h]
+\centering\centering
+\caption{\label{tab:unnamed-chunk-13}Forecast Accuracy for Precipitation in Colombia}
+\centering
+\begin{tabular}[t]{l|r|r|r|r|r|r|r}
+\hline
+  & ME & RMSE & MAE & MPE & MAPE & ACF1 & Theil's U\\
+\hline
+ARIMA & 4.65747 & 35.41950 & 28.19275 & -0.94601 & 14.71704 & 0.06677 & 0.49434\\
+\hline
+STL+ETS & 5.73029 & 37.46420 & 29.10067 & -1.20640 & 15.02950 & 0.01863 & 0.47917\\
+\hline
+ARIMA+Fourier & 4.65747 & 35.41950 & 28.19275 & -0.94601 & 14.71704 & 0.06677 & 0.49434\\
+\hline
+TBATS & 12.60992 & 37.30779 & 28.73991 & 3.04859 & 14.42548 & 0.07198 & 0.53294\\
+\hline
+\cellcolor{gray!10}{NN} & \cellcolor{gray!10}{4.87180} & \cellcolor{gray!10}{34.49584} & \cellcolor{gray!10}{28.19237} & \cellcolor{gray!10}{-0.29821} & \cellcolor{gray!10}{14.40852} & \cellcolor{gray!10}{0.03339} & \cellcolor{gray!10}{0.51512}\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Visual Model Comparison}\label{visual-model-comparison}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{autoplot}\NormalTok{(test\_precipitation) }\SpecialCharTok{+} \FunctionTok{autolayer}\NormalTok{(pre\_arima, }\AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{,}
+    \AttributeTok{series =} \StringTok{"ARIMA"}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{autolayer}\NormalTok{(pre\_stl\_ets, }\AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{series =} \StringTok{"STL+ETS"}\NormalTok{) }\SpecialCharTok{+}
+    \FunctionTok{autolayer}\NormalTok{(pre\_fourier, }\AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{series =} \StringTok{"ARIMA + Fourier"}\NormalTok{) }\SpecialCharTok{+}
+    \FunctionTok{autolayer}\NormalTok{(pre\_tbats, }\AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{series =} \StringTok{"TBATS"}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{autolayer}\NormalTok{(pre\_nnetar,}
+    \AttributeTok{PI =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{series =} \StringTok{"NN"}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{xlab}\NormalTok{(}\StringTok{"Year"}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\StringTok{"Precipitation(mm)"}\NormalTok{) }\SpecialCharTok{+}
+    \FunctionTok{guides}\NormalTok{(}\AttributeTok{colour =} \FunctionTok{guide\_legend}\NormalTok{(}\AttributeTok{title =} \StringTok{"Forecast"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Colombia_code_files/figure-latex/unnamed-chunk-14-1.pdf}
+
+\end{document}
