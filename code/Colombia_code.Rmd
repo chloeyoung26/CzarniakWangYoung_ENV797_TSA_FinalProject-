@@ -68,10 +68,20 @@ c_monthly_data_long <- c_monthly_data_long %>%
 
 write.csv(c_monthly_data_long, "../data/colombiamonthly_data_long.csv", row.names = FALSE)
 
+kable(head(c_monthly_data_long, 10),
+      caption = "First 10 Rows of Monthly Precipitation Data for Colombia")
+
+
+```
+
+## Creating Time Series Object
+```{r}
+
 c_ts_monthly <- ts(c_monthly_data_long$Precipitation, 
                  start = c(1901,1), frequency = 12)
 
 ```
+
 
 ## Initial Plots
 ```{r}
