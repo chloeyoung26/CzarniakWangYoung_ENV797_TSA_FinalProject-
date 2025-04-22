@@ -1,6 +1,6 @@
 ---
 title: "Colombia_code"
-authors: "Chloe"
+authors: "Chloe, Weilin, Gaby"
 output: pdf_document
 date: "2025-04-02"
 ---
@@ -96,10 +96,16 @@ acf(c_ts_monthly, lag.max = 48, main="ACF (Colombia)")
 pacf(c_ts_monthly, lag.max = 48, main="PACF (Colombia)")
 par(mfrow=c(1,1))
 ```
+**Interpretation:** The time series graph seems to show seasonality as there are visible peaks and troughs, consistent with a seasonal climate.There’s no clear upward or downward trend, suggesting the mean precipitation level has remained relatively stable over time. Moreover, although there’s variation in the amplitude showing more extreme years, this doesn’t appear to be systematically increasing or decreasing.
+
+The ACF shows a wave like pattern, and the significant autocorrelation at multiple repetitive lags suggests strong seasonality, likely due to Colombia's bi-modal rainy seasons. The PACF has a significant spike at lag 1 and smaller spikes at subsequent lags, suggesting  a short-term auto regressive (AR) component, where current precipitation is influenced by the previous month or two.
+
 
 ## Testing and Training
 ```{r}
 c_train_precipitation <- window(c_ts_monthly, end = c(2020, 12))
+
+c_h <- 240
 
 c_total_months <- length(c_ts_monthly)
 
@@ -112,14 +118,38 @@ autoplot(c_test_precipitation)
 ## Decomposing Time Series
 ```{r}
 
-# Decompose
+# Decompose using additive model
 c_decompose_monthly <- decompose(c_ts_monthly,"additive")
 plot(c_decompose_monthly)
 
 #Creating non-seasonal time series
 c_deseasonal_monthly <- seasadj(c_decompose_monthly)  
 
+# Decompose using multiplicative
+c_mult_decompose_monthly <- decompose(c_ts_monthly, "multiplicative")
+plot(c_mult_decompose_monthly)
+
 ```
+**Interpretation:** 
+Additive Model - the trend shows some variability across the years, but there's no clear increasing or decreasing pattern over time, more just oscillation representing variability instead of a linear trend.The seasonal component is constant over time, showing strong seasonality over the years, which is logical given rain patterns. The residuals appear roughly stable, with some years having anomylous peaks and trough representing random occurrences, but the centered nature of the residual component demonstrates that the additive model is a relatively good fit.
+
+Multiplicative Model - The trend component is practically the same as in the additive model indicating that there is no increasing or decreasing linear trend.The seasonal component also looks the same, even though now the seasonal component is proportional to the trend, indicating no major changes. The residuals also appear relatively stable with some anomilies (more than in the additive model).
+
+
+## Detrending
+```{r}
+
+c_nvar2 <- ncol(c_monthly_data_long) - 1
+c_nobs2 <- nrow(c_monthly_data_long)
+t <- c(1:c_nobs2)
+
+# Fit a linear trend to TS
+c_linear_trend_model <- lm(c_monthly_data_long$Precipitation ~ t)
+summary(c_linear_trend_model)
+
+```
+**Interpretation:**
+The slope is -0.000839mm/month of rain, indicating a very small but slight negative trend in precipitation. Nonetheless, the p-value is 0.852, which is considerably higher than 0.05, meaning that it's not statistically significant. The t value of 0.187 is also very close to 0 which indicates no meaningful relationship between monthly precipitation and time.
 
 ## ARIMA
 ```{r}
@@ -256,4 +286,20 @@ autoplot(c_test_precipitation) +
 
 
 ```
+
+**Interpretation:**
+ARIMA:
+The ARIMA model captures seasonality relatively well, but the forecast band is wide, indicating increasing uncertainty over time. It has the lowest RMSE meaning the smallest magnitude of error and the best Theil U score, indicating that the model performs well compared to a naive model. 
+
+STL + ETS:
+The STL + ETS model shows a smooth forecast curve with seasonality retained. Although the variance increases, it remains relatively controlled. The model has the best MAPE, meaning that the average magnitude of the errors is the lowest, and the best residual autocorrelation, indicating that more of the errors are random and not correlated with previous error.
+
+ARIMA + Fourier:
+This model is similar to regular ARIMA, but it captures cyclical seasonal components more clearly, which may not be so necessary here since the accuracy scores are the same as the ARIMA model.
+
+TBATS:
+TBATS shows an aggressive increase in forecast uncertainty, which may indicate model over fitting or extrapolation issues. The forecast seems relatively unstable after 2030, and none of the accuracy scores outperform the other models, indicating that it isn't the best fit.
+
+NNETAR:
+This model captures the general seasonal shape, but the forecast appears more rigid and less sensitive to variation. It is the worst performer across the models, with a high RMSE indicating a high magnitude of error, a high MAPE, and the worst Theil's U. Therefore, NNETAR isn't a good fit.
 
