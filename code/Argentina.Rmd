@@ -120,7 +120,7 @@ a_deseasonal_monthly <- seasadj(a_add_decompose_monthly)
 # Decompose using multiplicative
 ## Decomposing using multiplicative in case the magnitude of the seasonal pattern depends on the magnitude/level of the data, which is not clearly true, but let's try it. We have a question around WHETHER the magnitude of seasonality changes in relation to time.
 a_mult_decompose_monthly <- decompose(a_ts_monthly, "multiplicative")
-plot(a_multdecompose_monthly)
+plot(a_mult_decompose_monthly)
 
 ```
 ```{r Detrending}
@@ -176,8 +176,8 @@ a_fit_nnetar <- nnetar(a_train_precipitation)
 a_pre_nnetar <- forecast(a_fit_nnetar, h = a_h)
 plot(a_pre_nnetar, main = "NNETAR Forecast")
 ```
-
-```{r}
+## Comparing performance metrics across models for Argentina
+```{r Comparing performance metrics across models}
 
 a_calculate_all_metrics <- function(a_forecast_obj, a_test_data) {
   metrics <- accuracy(a_forecast_obj, a_test_data)["Test set", ]
@@ -189,7 +189,7 @@ a_accuracy_results <- data.frame(
   ME = c(
     accuracy(a_pre_arima, a_test_precipitation)["Test set", "ME"],
     accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "ME"],
-    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "ME"],
+    #accuracy(a_pre_fourier, a_test_precipitation)["Test set", "ME"],
     accuracy(a_pre_tbats, a_test_precipitation)["Test set", "ME"],
     accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "ME"]
   ),
@@ -229,3 +229,19 @@ a_accuracy_results_formatted <- a_accuracy_results %>%
 
 print(a_accuracy_results_formatted)
 ```
+
+## Comparing plots of models all together
+```{r Comparing plots of models all together}
+
+autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
+   autolayer(a_pre_arima, PI=FALSE, series="ARIMA") +
+   autolayer(a_pre_stl_ets, PI=FALSE, series="STL+ETS") +
+   #autolayer(pre_fourier, PI=FALSE, series="ARIMA + Fourier") +
+   autolayer(a_pre_tbats,PI=FALSE, series="TBATS") +
+   autolayer(a_pre_nnetar,PI=FALSE, series="NN") +
+  xlab("Year") + 
+  ylab("Precipitation (mm)") + 
+  guides(colour = guide_legend(title = "Forecast")) 
+
+```
+
