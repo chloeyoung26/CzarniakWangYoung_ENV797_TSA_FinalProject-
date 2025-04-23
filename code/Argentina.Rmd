@@ -245,3 +245,12 @@ autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
 
 ```
 
+```{r Comparing first 60 yrs and second 60 yrs}
+
+## Our data begins at 1901--we are lucky to be working with records from over more than 100 years.
+## Let's break the data into two parts, 1901-1962 and 1963-2024.
+## We want to then compare the mean of the high points and the mean of the low points to see if the mangitudes of the extremes are changing.
+
+```
+
+
