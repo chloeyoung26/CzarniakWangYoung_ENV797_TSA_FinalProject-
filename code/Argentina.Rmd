@@ -27,7 +27,7 @@ library(fable.prophet)
 
 ```
 
-## Importing Data
+## Importing data
 ```{r Import data}
 
 # Read Arg data from Excel file
