@@ -1,6 +1,8 @@
 ---
-title: "Interest in precipitation patterns in South America for their impact on crop yields"
+title: "Modeling precipitation patterns in South America due to the impact of water availability on crop yields"
+subtitle: "Final Project for ENV797: Time Series Analysis"
 author: "Chloe Young, Gaby Czarniak, and Weilin Wang"
+date: "April 25, 2025"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
@@ -71,11 +73,18 @@ Code & analysis for Colombia – Chloe
 https://github.com/chloeyoung26/CzarniakWangYoung_ENV797_TSA_FinalProject-.git 
 
 # References
-Food and Agriculture Organization of the United Nations (FAO). (2015). Climate change and food security: risks and responses. https://openknowledge.fao.org/server/api/core/bitstreams/a4fd8ac5-4582-4a66-91b0-55abf642a400/content. Accessed 6 April 2025.
-International Fund for Agriculture and Development (IFAD). (n.d. a.). Brazil. https://www.ifad.org/en/w/countries/brazil. Accessed 6 April 2025.
-International Fund for Agriculture and Development (IFAD). (n.d. b.). Colombia. https://www.ifad.org/en/w/countries/colombia. Accessed 6 April 2025.
-Santana, Andrés. (n.d.) Colombia as an agricultural powerhouse: The unfulfilled promise. Dutch Ministry of Agriculture, Fisheries, Food Security and Nature. https://www.agroberichtenbuitenland.nl/landeninformatie/colombia/achtergrond/agro-logistics. Accessed 6 April 2025.
-Myhre, G., Alterskjær, K., Stjern, C.W. et al. Frequency of extreme precipitation increases extensively with event rareness under global warming. Sci Rep 9, 16063 (2019). https://doi.org/10.1038/s41598-019-52277-4 
-Seneviratne, S.I., X. Zhang, M. Adnan, W. Badi, C. Dereczynski, A. Di Luca, S. Ghosh, I. Iskandar, J. Kossin, S. Lewis, F. Otto, I. Pinto, M. Satoh, S.M. Vicente-Serrano, M. Wehner, and B. Zhou. (2021). Weather and Climate Extreme Events in a Changing Climate. In Climate Change 2021: The Physical Science Basis. Contribution of Working Group I to the Sixth Assessment Report of the Intergovernmental Panel on Climate Change. [Masson-Delmotte, V., P. Zhai, A. Pirani, S.L. Connors, C. Péan, S. Berger, N. Caud, Y. Chen, L. Goldfarb, M.I. Gomis, M. Huang, K. Leitzell, E. Lonnoy, J.B.R. Matthews, T.K. Maycock, T. Waterfield, O. Yelekçi, R. Yu, and B. Zhou (eds.)]. Cambridge University Press, Cambridge, United Kingdom and New York, NY, USA, pp. 1513–1766, https://doi.org/10.1017/9781009157896.013.
-United States International Trade Administration (ITA). (2022, Oct. 26). Argentina: Agricultural Industry. ITA Market Intelligence. https://www.trade.gov/market-intelligence/argentina-agricultural-industry#:~:text=One%20of%20Argentina%27s%20most%20important%20economic%20sectors,beef%2C%20wine%2C%20soy%2C%20wheat%2C%20and%20other%20cereals.. Accessed 6 April 2025.
+Food and Agriculture Organization of the United Nations (FAO). (2015). Climate change and food security: risks and responses. https://openknowledge.fao.org/server/api/core/bitstreams/a4fd8ac5-4582-4a66-91b0-55abf642a400/content. Accessed 6 April 2025. \
+\
+International Fund for Agriculture and Development (IFAD). (n.d. a.). Brazil. https://www.ifad.org/en/w/countries/brazil. Accessed 6 April 2025. \
+\
+International Fund for Agriculture and Development (IFAD). (n.d. b.). Colombia. https://www.ifad.org/en/w/countries/colombia. Accessed 6 April 2025. \
+\
+Santana, Andrés. (n.d.) Colombia as an agricultural powerhouse: The unfulfilled promise. Dutch Ministry of Agriculture, Fisheries, Food Security and Nature. https://www.agroberichtenbuitenland.nl/landeninformatie/colombia/achtergrond/agro-logistics. Accessed 6 April 2025. \
+\
+Myhre, G., Alterskjær, K., Stjern, C.W. et al. Frequency of extreme precipitation increases extensively with event rareness under global warming. Sci Rep 9, 16063 (2019). https://doi.org/10.1038/s41598-019-52277-4.  \
+\
+Seneviratne, S.I., X. Zhang, M. Adnan, W. Badi, C. Dereczynski, A. Di Luca, S. Ghosh, I. Iskandar, J. Kossin, S. Lewis, F. Otto, I. Pinto, M. Satoh, S.M. Vicente-Serrano, M. Wehner, and B. Zhou. (2021). Weather and Climate Extreme Events in a Changing Climate. In Climate Change 2021: The Physical Science Basis. Contribution of Working Group I to the Sixth Assessment Report of the Intergovernmental Panel on Climate Change. [Masson-Delmotte, V., P. Zhai, A. Pirani, S.L. Connors, C. Péan, S. Berger, N. Caud, Y. Chen, L. Goldfarb, M.I. Gomis, M. Huang, K. Leitzell, E. Lonnoy, J.B.R. Matthews, T.K. Maycock, T. Waterfield, O. Yelekçi, R. Yu, and B. Zhou (eds.)]. Cambridge University Press, Cambridge, United Kingdom and New York, NY, USA, pp. 1513–1766, https://doi.org/10.1017/9781009157896.013. \
+\
+United States International Trade Administration (ITA). (2022, Oct. 26). Argentina: Agricultural Industry. ITA Market Intelligence. <https://www.trade.gov/market-intelligence/argentina-agricultural-industry#:~:text=One%20of%20Argentina%27s%20most%20important%20economic%20sectors,beef%2C%20wine%2C%20soy%2C%20wheat%2C%20and%20other%20cereals> . Accessed 6 April 2025. \
+\
 World Bank Group. (n.d.). Agriculture, forestry, and fishing, value added (% of GDP). https://data.worldbank.org/indicator/NV.AGR.TOTL.ZS?end=2023&most_recent_value_desc=true&start=2020. Accessed 23 April 2025.
