@@ -8,35 +8,156 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Introduction
+## Introduction
 This final project uses time series analysis to better understand changes in precipitation patterns in Argentina, Brazil, and Colombia, as we were interested in the continent of South America and these three countries are major agricultural producers of key crops globally. For context, Brazil and Argentina are two of the largest soybean producers in the world, with April 2025 estimates placing Brazil at producing 152 million tonnes—the largest soybean producer among Agricultural Market Information System (AMIS) countries—and Argentina producing 48.21 million tonnes—the third-largest soybean producing AMIS country—in 2023/2024, respectively (AMIS, 2025). For reference, the United States produced 113.27 million tonnes of soybean in 2023/2024 (AMIS, 2025). In terms of soybean exports, Brazil leads by far and Argentina comes in fourth among AMIS countries (AMIS, 2025). Colombia is a leading producer of coffee, bananas, flowers, rice, maize, palm oil, and more (Santana, n.d.). Brazil is also a leading producer of coffee, sugarcane, and corn, among other crops (IFAD, n.d. a.). In addition to soybeans, Argentina is a leading producer of wheat, corn, and wine, among other crops (ITA, 2022).
 
-# Motivation
+## Motivation
 Since in 2023 agriculture represented 7% of GDP in Argentina, 6.2%  in Brazil, and 8.7% in Colombia, this group was interested in factors that could have a major impact on crop yield, one of which is precipitation (IFAD, n.d. b.). Not only is global supply of a crop like soybean partially dependent on crop yields in Brazil and Argentina, for example, but within Argentina, Brazil, and Colombia, crop production impacts the labor force, too. In Colombia, for instance, agriculture accounts for 16% of employment (IFAD, n.d. b.). In terms of the motivation behind looking into precipitation data, specifically, over 39 million hectares of land in Argentina are cultivated for farming and ranching, while only 5% of these lands have irrigation systems (ITA, 2022). As water availability is key to food production (FAO, 2015), precipitation variability can very crucially impact agricultural planning. 
 
-# Relevance
+## Relevance
 Questions around changing precipitation patterns are particularly relevant given changing frequency and intensity of precipitation due to global warming (Myhre et al., 2019). The IPCC warns that rarer extreme precipitation events will become more frequent with more global warming (Seneviratne et al., 2021). The Food and Agriculture Organization has highlighted the importance of understanding “spatial changes in precipitation, in intensity and seasonal distribution” (FAO, 2015). Precipitation variability differs significantly by region. Understanding regional differences can help develop targeted adaptation strategies for, it is hoped, a more secure food system.
 
-# Objectives
+## Objectives
 Given data availability and the scope of this project, we evaluate the performance of different models used for time series analysis in fitting precipitation data for Brazil, Argentina, and Colombia, at the country level. The objectives are to determine:
 Using a training set of historical values and testing against more recent values, which model best fits and forecasts precipitation data for Brazil, Argentina, and Colombia?
 Is the magnitude of seasonality changing over time?
 The latter question is a question of interest in relation to the IPCC findings that extreme precipitation events will be increasing in frequency and intensity, with complex spatial distributions (Seneviratne, 2021).
 
-# Dataset information
+## Dataset information
 The dataset utilized was produced by the University of East Anglia’s Climate Research Unit (University of East Anglia - Climatic Research Unit, 2025). The first iteration of this data was published in 2000, and it has been continuously updated and upgraded since. The most recent version was updated just recently on March 19th of 2025, and it includes a high resolution, monthly 0.5 degree latitude by 0.5 degree longitude grid of land based observations from 1901 to 2024. They look at 10 different variables: Mean 2m temperature, diurnal 2m temperature range, precipitation rate, vapor pressure, wet days, cloud cover, frost days, minimum 2m temperature, maximum 2m temperature, and potential evapo-transpiration. Due to the relationship between crop yields and precipitation, and the importance of the agricultural sector in Brazil, Argentina, and Colombia, this report focused on the precipitation variable. The precipitation data was separated and imported to R studio in an Excel file: this initial data included monthly precipitation, seasonal values (MAM - spring, JJA -summer, SON - autumn, DJF - winter), and annual precipitation. 
 
 
-# Methods
-Data Processing & Time Series Creation
+## Methods
+**Data Processing & Time Series Creation**
 An initial search of the data was conducted to identify any missing values. Only the “DJF” column had one missing value—an NA. This NA was filled using the DJF column means for the sake of continuity, but the DJF column ended up not being utilized in the processes. Instead, monthly precipitation values were utilized, since this provided the most accurate depiction of seasonal patterns and additional trends. To format the data, the monthly precipitation columns and their dates were selected, and pivot_longer() was used to reshape the data so that there was a Date column including both month and year, which allowed for a chronological precipitation column. This reshaped dataset was exported as countrymonthly_data_long.csv. Using this cleaned data, a univariable monthly time series object beginning in January 1901 with a frequency of 12 was created.
 
-**Add a table that summarizes your data structure (variables, units, ranges and/or central tendencies, data source if multiple are used, etc.). This table should inserted as a `kable` function in an R chunk. Just show the first 10 rows of your data. Do not include the code used to generate your table.**
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=60), tidy=TRUE) 
+```
 
-Exploratory Analysis 
-To visualize the data, a plot of the time series object was created, and this was followed by an exploration of its patterns and autocorrelation using ACF and PACF. This information was helpful in deciding which models to use, as it provided information on the seasonality and auto regression. The time series was also  decomposed using both additive and multiplicative models in order to separate trend, seasonal, and residual components, allowing for more clear visualization prior to creating models. Following this, a linear trend model was fit to the time series object.
+```{r package, message=FALSE, echo = FALSE}
+library(readxl)
+library(openxlsx)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(forecast)  
+library(Kendall)
+library(cowplot)
+library(tseries)
+library(outliers)
+library(tidyverse)
+library(smooth)
+library(zoo)
+library(kableExtra)
+library(writexl)
+library(tsibble)
+library(fable)
+library(fable.prophet)
+library(ggplotify)
+library(gridExtra)
+library(grid)
 
-Models
+```
+
+```{r import colombia, echo = FALSE, include=FALSE}
+
+Colombia_pre_uncleaned <- read_excel("..data/Colombia_precipitation.xlsx")   
+
+colSums(is.na(Colombia_pre_uncleaned))
+Colombia_pre_uncleaned$DJF[is.na(Colombia_pre_uncleaned$DJF)] <- mean(Colombia_pre_uncleaned$DJF, na.rm = TRUE)
+colSums(is.na(Colombia_pre_uncleaned))
+
+write.csv(Colombia_pre_uncleaned, "../data/processed_colombia_precipitation.csv", row.names = FALSE)
+
+colombia_pre <- read_csv("../data/processed_colombia_precipitation.csv")
+
+head(colombia_pre)
+nvar <- ncol(colombia_pre) - 1
+nobs <- nrow(colombia_pre)
+
+```
+
+```{r clean colombia, echo = FALSE}
+
+c_monthly_data <- colombia_pre %>%
+  select(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC)
+
+c_monthly_data_long <- c_monthly_data %>%
+  pivot_longer(cols = JAN:DEC, names_to = "Month", values_to = "Precipitation")
+
+c_monthly_data_long <- c_monthly_data_long %>%
+  mutate(Month_Num = match(tolower(Month), tolower(month.abb)),
+         Date = as.Date(paste(YEAR, Month_Num, "01", sep = "-")),
+         .before = 1) %>%
+  arrange(Date)
+
+write.csv(c_monthly_data_long, "../data/colombiamonthly_data_long.csv", row.names = FALSE)
+
+kable(head(c_monthly_data_long, 10),
+      caption = "First 10 Rows of Monthly Precipitation Data for Colombia")
+
+```
+
+```{r ts creation colombia, echo = FALSE}
+
+c_ts_monthly <- ts(c_monthly_data_long$Precipitation, 
+                 start = c(1901,1), frequency = 12)
+
+```
+
+**Exploratory Analysis - Plots, ACF, PACF** 
+To visualize the data, a plot of the time series object was created, and this was followed by an exploration of its patterns and autocorrelation using ACF and PACF. This information was helpful in deciding which models to use, as it provided information on the seasonality and auto regression. 
+
+```{r colombia initial plots, echo = FALSE}
+autoplot(c_ts_monthly) +
+  ggtitle("Monthly Precipitation Time Series (Colombia)") +
+  xlab("Year") +
+  ylab("Precipitation (mm)") +
+  theme_minimal()
+
+par(mfrow=c(1,2))
+acf(c_ts_monthly, lag.max = 48, main="ACF (Colombia)")
+pacf(c_ts_monthly, lag.max = 48, main="PACF (Colombia)")
+par(mfrow=c(1,1))
+```
+
+The time series graph seems to show seasonality as there are visible peaks and troughs, consistent with a seasonal climate.There’s no clear upward or downward trend, suggesting the mean precipitation level has remained relatively stable over time. Moreover, although there’s variation in the amplitude showing more extreme years, this doesn’t appear to be systematically increasing or decreasing.
+
+The ACF shows a wave like pattern, and the significant autocorrelation at multiple repetitive lags suggests strong seasonality, likely due to Colombia's bi-modal rainy seasons. The PACF has a significant spike at lag 1 and smaller spikes at subsequent lags, suggesting  a short-term auto regressive (AR) component, where current precipitation is influenced by the previous month or two.
+
+**Exploratory Analysis - Decomposing and Detrending** 
+The time series was also  decomposed using both additive and multiplicative models in order to separate trend, seasonal, and residual components, allowing for more clear visualization prior to creating models. Following this, a linear trend model was fit to the time series object.
+```{r decomposing colombia, echo = FALSE}
+
+# Decompose using additive model
+c_decompose_monthly <- decompose(c_ts_monthly,"additive")
+plot(c_decompose_monthly)
+
+#Creating non-seasonal time series
+c_deseasonal_monthly <- seasadj(c_decompose_monthly)  
+
+# Decompose using multiplicative
+c_mult_decompose_monthly <- decompose(c_ts_monthly, "multiplicative")
+plot(c_mult_decompose_monthly)
+
+```
+
+```{r detrending colombia, echo = FALSE}
+
+c_nvar2 <- ncol(c_monthly_data_long) - 1
+c_nobs2 <- nrow(c_monthly_data_long)
+t <- c(1:c_nobs2)
+
+# Fit a linear trend to TS
+c_linear_trend_model <- lm(c_monthly_data_long$Precipitation ~ t)
+summary(c_linear_trend_model)
+
+```
+
+The slope is -0.000839mm/month of rain, indicating a very small but slight negative trend in precipitation. Nonetheless, the p-value is 0.852, which is considerably higher than 0.05, meaning that it's not statistically significant. The t value of 0.187 is also very close to 0 which indicates no meaningful relationship between monthly precipitation and time.
+
+**Models**
 The data was split into training and testing data sets. The training data set covered January 1901 to December 2020, and the testing data set included January 2021 to December 2024. Then, five models were select to apply to the training data:
 
 1. ARIMA
@@ -47,42 +168,193 @@ The data was split into training and testing data sets. The training data set co
 
 Each model generated a forecast and their accuracies were assessed using the metrics ME, RMSE, MAE, MPE, MAPE, ACF1, and Theil’s U. Finally, an overlay plot with all forecasts plotted on one graph was generated, allowing for visual comparison between models.
 
+```{r testing and training colombia, echo = FALSE}
+c_train_precipitation <- window(c_ts_monthly, end = c(2020, 12))
+
+c_h <- 240
+
+c_total_months <- length(c_ts_monthly)
+
+c_test_precipitation <- window(c_ts_monthly, start = c(2021, 1), end = c(2024, 12))
+
+```
+
+```{r arima colombia, echo = FALSE, include=FALSE}
+
+c_fit_arima <- auto.arima(c_train_precipitation)
+c_pre_arima <- forecast(c_fit_arima, h = 360)
+
+plot(c_pre_arima, main = "ARIMA Forecast (Colombia)")
+
+#Plot model + observed data
+autoplot(c_ts_monthly) +
+  autolayer(c_pre_arima, series="ARIMA",PI=FALSE) +
+  ylab("Precipitation (mm)")
+
+```
+
+```{r stl ets colombia, echo = FALSE, include = FALSE}
+
+c_pre_stl_ets <- stlf(c_train_precipitation, h = 360, method = "ets")
+plot(c_pre_stl_ets, main = "STL + ETS Forecast (Colombia)")
+
+#Plot model + observed data
+c_autop2 <- autoplot(c_ts_monthly) +
+  autolayer(c_pre_stl_ets, series="STL + ETS",PI=FALSE) +
+  ylab("Precipitation (mm)")
+
+```
+
+```{r arima fourier, echo = FALSE, include = FALSE}
+
+K <- 6
+c_fourier_train <- fourier(c_train_precipitation, K = K)
+c_fourier_future <- fourier(c_train_precipitation, K = K, h = 360)
+c_fit_fourier <- auto.arima(c_train_precipitation, xreg = c_fourier_train, seasonal = FALSE)
+c_pre_fourier <- forecast(c_fit_fourier, xreg = c_fourier_future, h = 360)
+
+plot(c_pre_fourier, main = "ARIMA + Fourier Forecast (Colombia)")
+
+#Plot model + observed data
+autoplot(c_ts_monthly) +
+  autolayer(c_pre_fourier, series="ARIMA + Fourier terms",PI=FALSE) +
+  ylab("Precipitation (mm)")
+
+```
+
+```{r tbats colombia, echo = FALSE, include = FALSE}
+
+c_fit_tbats <- tbats(c_train_precipitation)
+c_pre_tbats <- forecast(c_fit_tbats, h = 360)
+plot(c_pre_tbats, main = "TBATS Forecast (Colombia)")
+
+#Plot model + observed data
+autoplot(c_ts_monthly) +
+  autolayer(c_pre_tbats, series="TBATS",PI=FALSE) +
+  ylab("Precipitation (mm)")
+
+```
+
+```{r nnetar colombia, echo = FALSE, include = FALSE}
+
+c_fit_nnetar <- nnetar(c_train_precipitation)
+c_pre_nnetar <- forecast(c_fit_nnetar, h = 360)
+plot(c_pre_nnetar, main = "NNETAR Forecast (Colombia)")
+
+#Plot model + observed data
+autoplot(c_ts_monthly) +
+  autolayer(c_pre_nnetar, series="Neural Network",PI=FALSE) +
+  ylab("Precipitation (mm)")
+
+```
+
+```{r combined forecast plots colombia, echo = FALSE}
+
+c_g1 <- as.ggplot(~plot(c_pre_arima, main = ""))
+c_g2 <- as.ggplot(~plot(c_pre_stl_ets, main = ""))
+c_g3 <- as.ggplot(~plot(c_pre_fourier, main = ""))
+c_g4 <- as.ggplot(~plot(c_pre_tbats, main = ""))
+c_g5 <- as.ggplot(~plot(c_pre_nnetar, main = ""))
 
 
-
-# Models
-
-## Brazil
-
-
-
-## Argentina
+c_g1_titled <- arrangeGrob(c_g1, top = textGrob("ARIMA Forecast (Colombia)", gp = gpar(fontface = "bold")))
+c_g2_titled <- arrangeGrob(c_g2, top = textGrob("STL + ETS Forecast (Colombia)", gp = gpar(fontface = "bold")))
+c_g3_titled <- arrangeGrob(c_g3, top = textGrob("ARIMA + Fourier Forecast (Colombia)", gp = gpar(fontface = "bold")))
+c_g4_titled <- arrangeGrob(c_g4, top = textGrob("TBATS Forecast (Colombia)", gp = gpar(fontface = "bold")))
+c_g5_titled <- arrangeGrob(c_g5, top = textGrob("NNETAR Forecast (Colombia)", gp = gpar(fontface = "bold")))
 
 
+grid.arrange(c_g1_titled, c_g2_titled, c_g3_titled, c_g4_titled, c_g5_titled, ncol = 2)
 
-## Colombia
+```
+
+**Accuracy Metrics**
+```{r, echo = FALSE}
+
+#Model 1: ARIMA
+c_ARIMA_scores <- accuracy(c_pre_arima$mean,c_test_precipitation)  
+
+#Model 2: STL + ETS
+c_ETS_scores <- accuracy(c_pre_stl_ets$mean,c_test_precipitation)  
+
+#Model 3: ARIMA + Fourier 
+c_ARIMAF_scores <- accuracy(c_pre_fourier$mean,c_test_precipitation)
+
+# Model 4:  TBATS 
+c_TBATS_scores <- accuracy(c_pre_tbats$mean,c_test_precipitation)
+
+# Model 5:  Neural Network 
+c_NN_scores <- accuracy(c_pre_nnetar$mean,c_test_precipitation)
+
+```
+
+```{r, echo = FALSE}
+
+#create data frame
+c_scores <- as.data.frame(
+  rbind(c_ARIMA_scores, c_ETS_scores, c_ARIMA_scores, c_TBATS_scores, c_NN_scores)
+  )
+row.names(c_scores) <- c("ARIMA", "STL+ETS", "ARIMA+Fourier","TBATS","NN")
 
 
+```
+
+```{r, echo = FALSE}
+
+kbl(c_scores, 
+      caption = "Forecast Accuracy for Precipitation in Colombia",
+      digits = array(5,ncol(c_scores))) %>%
+  kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position") 
+```
+
+**Visual Model Comparison**
+```{r, echo = FALSE}
+
+autoplot(c_test_precipitation) +
+  autolayer(c_pre_arima, PI=FALSE, series="ARIMA") +
+  autolayer(c_pre_stl_ets, PI=FALSE, series="STL+ETS") +
+  autolayer(c_pre_fourier, PI=FALSE, series="ARIMA + Fourier") +
+  autolayer(c_pre_tbats,PI=FALSE, series="TBATS") +
+  autolayer(c_pre_nnetar,PI=FALSE, series="NN") +
+  xlab("Year") + ylab("Precipitation(mm)") + 
+  ggtitle("Colombia Visual Model Comparison") + 
+  guides(colour=guide_legend(title="Forecast"))
 
 
+```
 
-# Summary and conclusion
+ARIMA:
+The ARIMA model captures seasonality relatively well, but the forecast band is wide, indicating increasing uncertainty over time. It has the lowest RMSE meaning the smallest magnitude of error and the best Theil U score, indicating that the model performs well compared to a naive model. 
 
-## Major findings
+STL + ETS:
+The STL + ETS model shows a smooth forecast curve with seasonality retained. Although the variance increases, it remains relatively controlled. The model has the best MAPE, meaning that the average magnitude of the errors is the lowest, and the best residual autocorrelation, indicating that more of the errors are random and not correlated with previous error.
 
+ARIMA + Fourier:
+This model is similar to regular ARIMA, but it captures cyclical seasonal components more clearly, which may not be so necessary here since the accuracy scores are the same as the ARIMA model.
 
-## Conclusions to draw from these findings
+TBATS:
+TBATS shows an aggressive increase in forecast uncertainty, which may indicate model over fitting or extrapolation issues. The forecast seems relatively unstable after 2030, and none of the accuracy scores outperform the other models, indicating that it isn't the best fit.
 
+NNETAR:
+This model captures the general seasonal shape, but the forecast appears more rigid and less sensitive to variation. It is the worst performer across the models, with a high RMSE indicating a high magnitude of error, a high MAPE, and the worst Theil's U. Therefore, NNETAR isn't a good fit.
+
+## Summary
+Time series analysis was applied to precipitation patterns in Argentina, Brazil, and Colombia using monthly data from 1901 to 2024. Five forecasting models were evaluated: ARIMA, STL+ETS, ARIMA with Fourier Terms, TBATS, and Neural Network Autoregression to determine optimal prediction methodologies for each country. Training data from January 1901 to December 2020 was utilized, with model validation performed against testing data from January 2021 to December 2024. Model performance was assessed using multiple accuracy metrics (ME, RMSE, MAE, MPE, MAPE, ACF1, and Theil's U). The analysis aimed to identify changes in precipitation seasonality patterns, particularly relevant given IPCC projections of increasing extreme precipitation events due to climate change. These findings are significant considering recent research showing that Central South America received only 44% of average total precipitation during the last four months of 2022, highlighting the increasing variability in regional rainfall patterns (Rivera et al., 2023).
+
+## Conclusion
+The analysis found no pattern in precipitation periods over time - there was no significant increase or decrease, and extremities also didn’t systematically increase or decrease. This is contradictory to what the wider data displays; IPCC projections show that precipitation patterns are meant to be increasingly variable due to climate change, indicating that agricultural producers in these regions will face adaptation challenges related to changing water availability patterns. This could be because the data we used is country wide, and our three selected countries have large land areas, and therefore, experience different patterns across the regions. Therefore, perhaps if we used data in more localized, smaller regions, we would have found patterns changing over time; there may not be an overall change across entire countries because variability could average out to appear consistent, but in small areas, more frequent droughts or higher rainfall likely exist.
+
+Regardless, the topic remains important and precipitation pattern monitoring and forecasting for agricultural planning in regions with limited irrigation infrastructure is crucial. Recent research has confirmed that in South America, rainfall patterns are projected to shift significantly, with decreases expected in the eastern northern Andes, southern Andes in Chile, and Amazonia, while increases are projected for southeastern South America and the northern Andes (Almazroui et al., 2021). These changes have significant implications for agricultural productivity. As noted by the Economic Commission for Latin America and the Caribbean, climate change effects on temperature and precipitation patterns could reduce rural incomes by as much as 20% in some South American countries (ECLAC, n.d.). Furthermore, NASA research suggests that climate change may affect the production of key crops like maize as early as 2030, with projected yield declines of up to 24% in regions including Brazil (NASA, 2023). 
 
 ## Limitations and insights on how to improve the model
 Predicting changes in frequency and intensity of extreme precipitation events is deeply complex and, as stated in the IPCC Sixth Assessment report, “increases in the intensity of extreme precipitation at regional scales will vary, depending on the amount of regional warming, changes in atmospheric circulation and storm dynamics (high confidence)” (Seneviratne et al., 2019).
 Regarding limitations, it should be noted that, while we use precipitation data at the country level, precipitation patterns can vary drastically within each country, which contain multiple and varying ecosystems. Forecasting precipitation levels at the country scale does not account for precipitation patterns across different regions within a country. To make these models more helpful, time series models could be used could to analyze and forecast precipitation within key crop-producing provinces; in Argentina, for instance, this could be the provinces of Santa Fe, Córdoba, and Buenos Aires, where climate, water tables, and precipitation vastly differ from the southern tip of Argentina’s Misiones, Tierra del Fuego, and Jujuy provinces. 
 
-
 # Contribution statement of this report
 Introduction, motivation, relevance, objectives, and limitations within the conclusion – Gaby
 Dataset and methods – Chloe
-Summary and conclusion – Weilin
+Summary – Weilin
+Conclusion – Weilin & Chloe 
 Code & analysis for Brazil – Weilin
 Code & analysis for Argentina – Gaby
 Code & analysis for Colombia – Chloe
@@ -91,18 +363,30 @@ Code & analysis for Colombia – Chloe
 https://github.com/chloeyoung26/CzarniakWangYoung_ENV797_TSA_FinalProject-.git 
 
 # References
-Food and Agriculture Organization of the United Nations (FAO). (2015). Climate change and food security: risks and responses. https://openknowledge.fao.org/server/api/core/bitstreams/a4fd8ac5-4582-4a66-91b0-55abf642a400/content. Accessed 6 April 2025. \
-\
-International Fund for Agriculture and Development (IFAD). (n.d. a.). Brazil. https://www.ifad.org/en/w/countries/brazil. Accessed 6 April 2025. \
-\
-International Fund for Agriculture and Development (IFAD). (n.d. b.). Colombia. https://www.ifad.org/en/w/countries/colombia. Accessed 6 April 2025. \
-\
-Santana, Andrés. (n.d.) Colombia as an agricultural powerhouse: The unfulfilled promise. Dutch Ministry of Agriculture, Fisheries, Food Security and Nature. https://www.agroberichtenbuitenland.nl/landeninformatie/colombia/achtergrond/agro-logistics. Accessed 6 April 2025. \
-\
-Myhre, G., Alterskjær, K., Stjern, C.W. et al. Frequency of extreme precipitation increases extensively with event rareness under global warming. Sci Rep 9, 16063 (2019). https://doi.org/10.1038/s41598-019-52277-4.  \
-\
-Seneviratne, S.I., X. Zhang, M. Adnan, W. Badi, C. Dereczynski, A. Di Luca, S. Ghosh, I. Iskandar, J. Kossin, S. Lewis, F. Otto, I. Pinto, M. Satoh, S.M. Vicente-Serrano, M. Wehner, and B. Zhou. (2021). Weather and Climate Extreme Events in a Changing Climate. In Climate Change 2021: The Physical Science Basis. Contribution of Working Group I to the Sixth Assessment Report of the Intergovernmental Panel on Climate Change. [Masson-Delmotte, V., P. Zhai, A. Pirani, S.L. Connors, C. Péan, S. Berger, N. Caud, Y. Chen, L. Goldfarb, M.I. Gomis, M. Huang, K. Leitzell, E. Lonnoy, J.B.R. Matthews, T.K. Maycock, T. Waterfield, O. Yelekçi, R. Yu, and B. Zhou (eds.)]. Cambridge University Press, Cambridge, United Kingdom and New York, NY, USA, pp. 1513–1766, https://doi.org/10.1017/9781009157896.013. \
-\
-United States International Trade Administration (ITA). (2022, Oct. 26). Argentina: Agricultural Industry. ITA Market Intelligence. <https://www.trade.gov/market-intelligence/argentina-agricultural-industry#:~:text=One%20of%20Argentina%27s%20most%20important%20economic%20sectors,beef%2C%20wine%2C%20soy%2C%20wheat%2C%20and%20other%20cereals> . Accessed 6 April 2025. \
-\
+Almazroui, M., Islam, M.N., Saeed, F. et al. (2021). Assessment of CMIP6 Performance and Projected Temperature and Precipitation Changes Over South America. Earth Systems and Environment, 5, 155–183. https://doi.org/10.1007/s41748-021-00233-6. Accessed 20 April 2025.
+
+Food and Agriculture Organization of the United Nations (FAO). (2015). Climate change and food security: risks and responses. https://openknowledge.fao.org/server/api/core/bitstreams/a4fd8ac5-4582-4a66-91b0-55abf642a400/content. Accessed 6 April 2025.
+
+Economic Commission for Latin America and the Caribbean (ECLAC). (n.d.). Climate Change Threatens the Basis of Food Security in Latin America and the Caribbean: Agriculture.
+https://www.cepal.org/en/pressreleases/climate-change-threatens-basis-food-security-latin-america-and-caribbean-agriculture. Accessed 20 April 2025.
+
+International Fund for Agriculture and Development (IFAD). (n.d. a.). Brazil. https://www.ifad.org/en/w/countries/brazil. Accessed 6 April 2025.
+
+International Fund for Agriculture and Development (IFAD). (n.d. b.). Colombia. https://www.ifad.org/en/w/countries/colombia. Accessed 6 April 2025.
+
+Santana, Andrés. (n.d.) Colombia as an agricultural powerhouse: The unfulfilled promise. Dutch Ministry of Agriculture, Fisheries, Food Security and Nature.https://www.agroberichtenbuitenland.nl/landeninformatie/colombia/achtergrond/agro-logistics. Accessed 6 April 2025.
+
+Myhre, G., Alterskjær, K., Stjern, C.W. et al. Frequency of extreme precipitation increases extensively with event rareness under global warming. Sci Rep 9, 16063 (2019). https://doi.org/10.1038/s41598-019-52277-4 
+
+NASA. (2023). Global Climate Change Impact on Crops Expected Within 10 Years, NASA Study Finds.https://climate.nasa.gov/news/3124/global-climate-change-impact-on-crops-expected-within-10-years-nasa-study-finds/. Accessed 20 April 2025.
+
+Seneviratne, S.I., X. Zhang, M. Adnan, W. Badi, C. Dereczynski, A. Di Luca, S. Ghosh, I. Iskandar, J. Kossin, S. Lewis, F. Otto, I. Pinto, M. Satoh, S.M. Vicente-Serrano, M. Wehner, and B. Zhou. (2021). Weather and Climate Extreme Events in a Changing Climate. In Climate Change 2021: The Physical Science Basis. Contribution of Working Group I to the Sixth Assessment Report of the Intergovernmental Panel on Climate Change. [Masson-Delmotte, V., P. Zhai, A. Pirani, S.L. Connors, C. Péan, S. Berger, N. Caud, Y. Chen, L. Goldfarb, M.I. Gomis, M. Huang, K. Leitzell, E. Lonnoy, J.B.R. Matthews, T.K. Maycock, T. Waterfield, O. Yelekçi, R. Yu, and B. Zhou (eds.)]. Cambridge University Press, Cambridge, United Kingdom and New York, NY, USA, pp. 1513–1766, https://doi.org/10.1017/9781009157896.013.
+
+Rivera, J.A., Barros, V.R., Olmo, M. et al. (2023). Interplay between climate change and climate variability: the 2022 drought in Central South America. Climatic Change, 171, 52. https://doi.org/10.1007/s10584-023-03664-4. Accessed 20 April 2025.
+
+United States International Trade Administration (ITA). (2022, Oct. 26). Argentina: Agricultural Industry. ITA Market Intelligence. https://www.trade.gov/market-intelligence/argentina-agricultural-industry#:~:text=One%20of%20Argentina%27s%20most%20important%20economic%20sectors,beef%2C%20wine%2C%20soy%2C%20wheat%2C%20and%20other%20cereals.. Accessed 6 April 2025.
+
+University of East Anglia - Climatic Research Unit. (2025). CRU TS Version 4.09. Uea.ac.uk. https://crudata.uea.ac.uk/cru/data/hrg/cru_ts_4.09/
+
 World Bank Group. (n.d.). Agriculture, forestry, and fishing, value added (% of GDP). https://data.worldbank.org/indicator/NV.AGR.TOTL.ZS?end=2023&most_recent_value_desc=true&start=2020. Accessed 23 April 2025.
+
