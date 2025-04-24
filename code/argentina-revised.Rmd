@@ -1,5 +1,5 @@
 ---
-title: "Brazil_code"
+title: "Argentina_code"
 authors: "Chloe, Weilin, and Gaby"
 output: pdf_document
 date: "2025-04-06"
@@ -31,31 +31,32 @@ library(fable.prophet)
 
 ## Importing Data
 ```{r}
-# Read Brazil data from Excel file
-brazil_pre_uncleaned <- read_excel("data/brazil_precipitation.xlsx")
+# Read Argentina data from Excel file
+arg_pre_uncleaned <- read.xlsx(xlsxFile = './data/Argentina_precipitation.xlsx')
 
-colSums(is.na(brazil_pre_uncleaned))
+# Check for NAs
+colSums(is.na(arg_pre_uncleaned)) # DJF has one NA
 
 # Interpolating a value for mean
-brazil_pre_uncleaned$DJF[is.na(brazil_pre_uncleaned$DJF)] <- mean(brazil_pre_uncleaned$DJF, 
-                                                                 na.rm = TRUE)
-colSums(is.na(brazil_pre_uncleaned))
+arg_pre_uncleaned$DJF[is.na(arg_pre_uncleaned$DJF)] <- mean(arg_pre_uncleaned$DJF, 
+                                                           na.rm = TRUE)
+colSums(is.na(arg_pre_uncleaned))
 
 # Save processed data
-write.csv(brazil_pre_uncleaned, './data/processed_brazil_precipitation.csv', 
+write.csv(arg_pre_uncleaned, './data/processed_argentina_precipitation.csv', 
           row.names = FALSE)
 
-brazil_pre <- read_csv('./data/processed_brazil_precipitation.csv')
+arg_pre <- read_csv('./data/processed_argentina_precipitation.csv')
 
-# Inspect Brazil precipitation data
-head(brazil_pre)
-nvar <- ncol(brazil_pre) - 1
-nobs <- nrow(brazil_pre)
+# Inspect Argentina precipitation data
+head(arg_pre)
+nvar <- ncol(arg_pre) - 1
+nobs <- nrow(arg_pre)
 ```
 
 ## Data Cleaning & TS Creation
 ```{r}
-monthly_data <- brazil_pre %>%
+monthly_data <- arg_pre %>%
   select(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC)
 
 monthly_data_long <- monthly_data %>%
@@ -67,7 +68,7 @@ monthly_data_long <- monthly_data_long %>%
          .before = 1) %>%
   arrange(Date)
 
-write.csv(monthly_data_long, './data/brazilmonthly_data_long.csv', row.names = FALSE)
+write.csv(monthly_data_long, './data/argentinamonthly_data_long.csv', row.names = FALSE)
 
 ts_monthly <- ts(monthly_data_long$Precipitation, 
                  start = c(1901,1), frequency = 12)
@@ -76,14 +77,14 @@ ts_monthly <- ts(monthly_data_long$Precipitation,
 ## Initial Plots
 ```{r}
 autoplot(ts_monthly) +
-  ggtitle("Monthly Precipitation Time Series (Brazil)") +
+  ggtitle("Monthly Precipitation Time Series (Argentina)") +
   xlab("Year") +
   ylab("Precipitation (mm)") +
   theme_minimal()
 
 par(mfrow=c(1,2))
-acf(ts_monthly, lag.max = 48, main="ACF (Brazil)")
-pacf(ts_monthly, lag.max = 48, main="PACF (Brazil)")
+acf(ts_monthly, lag.max = 48, main="ACF (Argentina)")
+pacf(ts_monthly, lag.max = 48, main="PACF (Argentina)")
 par(mfrow=c(1,1))
 ```
 
@@ -116,7 +117,7 @@ deseasonal_monthly <- seasadj(decompose_monthly)
 fit_arima <- auto.arima(train_precipitation)
 pre_arima <- forecast(fit_arima, h = 360)
 
-plot(pre_arima, main = "ARIMA Forecast (Brazil)")
+plot(pre_arima, main = "ARIMA Forecast (Argentina)")
 
 #Plot model + observed data
 autoplot(ts_monthly) +
@@ -127,7 +128,7 @@ autoplot(ts_monthly) +
 ## STL + ETS
 ```{r}
 pre_stl_ets <- stlf(train_precipitation, h = 360, method = "ets")
-plot(pre_stl_ets, main = "STL + ETS Forecast (Brazil)")
+plot(pre_stl_ets, main = "STL + ETS Forecast (Argentina)")
 
 #Plot model + observed data
 autoplot(ts_monthly) +
@@ -143,7 +144,7 @@ fourier_future <- fourier(train_precipitation, K = K, h = 360)
 fit_fourier <- auto.arima(train_precipitation, xreg = fourier_train, seasonal = FALSE)
 pre_fourier <- forecast(fit_fourier, xreg = fourier_future, h = 360)
 
-plot(pre_fourier, main = "ARIMA + Fourier Forecast (Brazil)")
+plot(pre_fourier, main = "ARIMA + Fourier Forecast (Argentina)")
 
 #Plot model + observed data
 autoplot(ts_monthly) +
@@ -155,7 +156,7 @@ autoplot(ts_monthly) +
 ```{r}
 fit_tbats <- tbats(train_precipitation)
 pre_tbats <- forecast(fit_tbats, h = 360)
-plot(pre_tbats, main = "TBATS Forecast (Brazil)")
+plot(pre_tbats, main = "TBATS Forecast (Argentina)")
 
 #Plot model + observed data
 autoplot(ts_monthly) +
@@ -167,7 +168,7 @@ autoplot(ts_monthly) +
 ```{r}
 fit_nnetar <- nnetar(train_precipitation)
 pre_nnetar <- forecast(fit_nnetar, h = 360)
-plot(pre_nnetar, main = "NNETAR Forecast (Brazil)")
+plot(pre_nnetar, main = "NNETAR Forecast (Argentina)")
 
 #Plot model + observed data
 autoplot(ts_monthly) +
@@ -207,7 +208,7 @@ cat("The best model by RMSE is:", row.names(scores[best_model_index,]))
 
 ```{r}
 kbl(scores, 
-      caption = "Forecast Accuracy for Precipitation in Brazil",
+      caption = "Forecast Accuracy for Precipitation in Argentina",
       digits = array(5,ncol(scores))) %>%
   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position") %>%
   #highlight model with lowest RMSE
