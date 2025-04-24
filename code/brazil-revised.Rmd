@@ -32,7 +32,7 @@ library(fable.prophet)
 ## Importing Data
 ```{r}
 # Read Brazil data from Excel file
-brazil_pre_uncleaned <- read_excel("data/brazil_precipitation.xlsx")
+brazil_pre_uncleaned <- read_excel("../data/brazil_precipitation.xlsx")
 
 colSums(is.na(brazil_pre_uncleaned))
 
@@ -42,10 +42,10 @@ brazil_pre_uncleaned$DJF[is.na(brazil_pre_uncleaned$DJF)] <- mean(brazil_pre_unc
 colSums(is.na(brazil_pre_uncleaned))
 
 # Save processed data
-write.csv(brazil_pre_uncleaned, './data/processed_brazil_precipitation.csv', 
+write.csv(brazil_pre_uncleaned, '../data/processed_brazil_precipitation.csv', 
           row.names = FALSE)
 
-brazil_pre <- read_csv('./data/processed_brazil_precipitation.csv')
+brazil_pre <- read_csv('../data/processed_brazil_precipitation.csv')
 
 # Inspect Brazil precipitation data
 head(brazil_pre)
@@ -67,7 +67,7 @@ monthly_data_long <- monthly_data_long %>%
          .before = 1) %>%
   arrange(Date)
 
-write.csv(monthly_data_long, './data/brazilmonthly_data_long.csv', row.names = FALSE)
+write.csv(monthly_data_long, '../data/brazilmonthly_data_long.csv', row.names = FALSE)
 
 ts_monthly <- ts(monthly_data_long$Precipitation, 
                  start = c(1901,1), frequency = 12)
@@ -225,3 +225,37 @@ autoplot(test_precipitation) +
   xlab("Year") + ylab("Precipitation(mm)") + 
   guides(colour=guide_legend(title="Forecast"))
 ```
+
+
+```{r}
+# Create a 3x2 grid of plots (one for each model + actual test data)
+par(mfrow = c(3, 2))
+
+# Plot 1: Test data (actual values)
+plot(test_precipitation, main = "Actual Test Data", ylab = "Precipitation (mm)", xlab = "Year")
+
+# Plot 2: ARIMA model
+plot(pre_arima, main = "ARIMA Forecast", PI = FALSE, ylab = "Precipitation (mm)", xlab = "Year")
+lines(test_precipitation, col = "black")
+
+# Plot 3: STL+ETS model
+plot(pre_stl_ets, main = "STL+ETS Forecast", PI = FALSE, ylab = "Precipitation (mm)", xlab = "Year")
+lines(test_precipitation, col = "black")
+
+# Plot 4: ARIMA+Fourier model
+plot(pre_fourier, main = "ARIMA+Fourier Forecast", PI = FALSE, ylab = "Precipitation (mm)", xlab = "Year")
+lines(test_precipitation, col = "black")
+
+# Plot 5: TBATS model
+plot(pre_tbats, main = "TBATS Forecast", PI = FALSE, ylab = "Precipitation (mm)", xlab = "Year")
+lines(test_precipitation, col = "black")
+
+# Plot 6: Neural Network model
+plot(pre_nnetar, main = "Neural Network Forecast", PI = FALSE, ylab = "Precipitation (mm)", xlab = "Year")
+lines(test_precipitation, col = "black")
+
+# Reset the plot layout
+par(mfrow = c(1, 1))
+```
+
+Interpretation：

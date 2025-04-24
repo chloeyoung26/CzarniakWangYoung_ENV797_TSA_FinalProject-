@@ -27,7 +27,7 @@ library(fable.prophet)
 
 ```
 
-## Importing Data
+## Importing data
 ```{r Import data}
 
 # Read Arg data from Excel file
@@ -48,33 +48,33 @@ arg_pre <- read_csv('./data/processed_argentina_precipitation.csv')
 
 # Inspect Brazil precipitation data
 head(arg_pre)
-nvar <- ncol(arg_pre) - 1
-nobs <- nrow(arg_pre)
+a_nvar <- ncol(arg_pre) - 1
+a_nobs <- nrow(arg_pre)
 ```
 
 ## Data wrangling 
 ```{r Data wrangling }
 
-monthly_data <- arg_pre %>%
+a_monthly_data <- arg_pre %>%
   select(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC)
 
-monthly_data_long <- monthly_data %>%
+a_monthly_data_long <- a_monthly_data %>%
   pivot_longer(cols = JAN:DEC, names_to = "Month", values_to = "Precipitation")
 
-monthly_data_long <- monthly_data_long %>%
+a_monthly_data_long <- a_monthly_data_long %>%
   mutate(Month_Num = match(tolower(Month), tolower(month.abb)),
          Date = as.Date(paste(YEAR, Month_Num, "01", sep = "-")),
          .before = 1) %>%
   arrange(Date)
 
-write.csv(monthly_data_long, './data/argentinamonthly_data_long.csv', row.names = FALSE)
+write.csv(a_monthly_data_long, './data/argentinamonthly_data_long.csv', row.names = FALSE)
 
 ```
 
 ## Creating a ts object
 ```{r Creating a ts object for monthly precipitation data}
 
-ts_monthly <- ts(monthly_data_long$Precipitation, 
+a_ts_monthly <- ts(a_monthly_data_long$Precipitation, 
                  start = c(1901,1), frequency = 12)
 
 ```
@@ -82,15 +82,15 @@ ts_monthly <- ts(monthly_data_long$Precipitation,
 ## Initial Plots
 ```{r Initial ts plots}
 
-autoplot(ts_monthly) +
+autoplot(a_ts_monthly) +
   ggtitle("Monthly Precipitation Time Series") +
   xlab("Year") +
   ylab("Precipitation (mm)") +
   theme_minimal()
 
 par(mfrow=c(1,2))
-acf(ts_monthly, lag.max = 48, main="ACF of Monthly Precipitation")
-pacf(ts_monthly, lag.max = 48, main="PACF of Monthly Precipitation")
+acf(a_ts_monthly, lag.max = 48, main="ACF of Monthly Precipitation")
+pacf(a_ts_monthly, lag.max = 48, main="PACF of Monthly Precipitation")
 # par(mfrow=c(1,1))
 
 ```
@@ -99,113 +99,158 @@ pacf(ts_monthly, lag.max = 48, main="PACF of Monthly Precipitation")
 
 ## Testing and Training Data
 ```{r}
-train_precipitation <- window(ts_monthly, end = c(2020, 12))
+a_train_precipitation <- window(a_ts_monthly, end = c(2020, 12))
 
-h <- 240
+a_h <- 240
 
-total_months <- length(ts_monthly)
+a_total_months <- length(ts_monthly)
 
-test_precipitation <- window(ts_monthly, start = c(2021, 1), end = c(2024, 12))
+a_test_precipitation <- window(a_ts_monthly, start = c(2021, 1), end = c(2024, 12))
 ```
 
 ## Decomposing Time Series
 ```{r}
-# Decompose
-decompose_monthly <- decompose(ts_monthly,"additive")
-plot(decompose_monthly)
+# Decompose using additive
+a_add_decompose_monthly <- decompose(a_ts_monthly,"additive")
+plot(a_add_decompose_monthly)
 
-#Creating non-seasonal time series
-deseasonal_monthly <- seasadj(decompose_monthly)  
+# Creating non-seasonal time series
+a_deseasonal_monthly <- seasadj(a_add_decompose_monthly)  
+
+# Decompose using multiplicative
+## Decomposing using multiplicative in case the magnitude of the seasonal pattern depends on the magnitude/level of the data, which is not clearly true, but let's try it. We have a question around WHETHER the magnitude of seasonality changes in relation to time.
+a_mult_decompose_monthly <- decompose(a_ts_monthly, "multiplicative")
+plot(a_mult_decompose_monthly)
+
 ```
+```{r Detrending}
+
+a_nvar2 <- ncol(a_monthly_data_long) - 1
+a_nobs2 <- nrow(a_monthly_data_long)
+t <- c(1:a_nobs2)
+
+# Fit a linear trend to TS
+a_linear_trend_model <- lm(a_monthly_data_long$Precipitation ~ t)
+summary(a_linear_trend_model)
+
+```
+
+
 
 ## ARIMA
 ```{r}
-fit_arima <- auto.arima(train_precipitation)
-pre_arima <- forecast(fit_arima, h = h)
+a_fit_arima <- auto.arima(a_train_precipitation)
+a_pre_arima <- forecast(a_fit_arima, h = h)
 
-plot(pre_arima, main = "ARIMA Forecast")
+plot(a_pre_arima, main = "ARIMA Forecast")
 ```
 
 ## STL + ETS
 ```{r}
-pre_stl_ets <- stlf(train_precipitation, h = h, method = "ets")
-plot(pre_stl_ets, main = "STL + ETS Forecast")
+a_pre_stl_ets <- stlf(a_train_precipitation, h = h, method = "ets")
+plot(a_pre_stl_ets, main = "STL + ETS Forecast")
 ```
 
 ## ARIMA + Fourier terms
 ```{r}
-K <- 6
-fourier_train <- fourier(train_precipitation, K = K)
-fourier_future <- fourier(train_precipitation, K = K, h = h)
-fit_fourier <- auto.arima(train_precipitation, xreg = fourier_train, seasonal = FALSE)
-pre_fourier <- forecast(fit_fourier, xreg = fourier_future, h = h)
+a_K <- 6
+a_fourier_train <- fourier(a_train_precipitation, K = a_K)
+a_fourier_future <- fourier(a_train_precipitation, K = a_K, h = a_h)
+a_fit_fourier <- auto.arima(a_train_precipitation, xreg = a_fourier_train, seasonal = FALSE)
+a_pre_fourier <- forecast(a_fit_fourier, xreg = a_fourier_future, h = a_h)
 
-plot(pre_fourier, main = "ARIMA + Fourier Forecast")
+plot(a_pre_fourier, main = "ARIMA + Fourier Forecast")
 ```
 
 ## TBATS
 ```{r}
-fit_tbats <- tbats(train_precipitation)
-pre_tbats <- forecast(fit_tbats, h = h)
-plot(pre_tbats, main = "TBATS Forecast")
+a_fit_tbats <- tbats(a_train_precipitation)
+a_pre_tbats <- forecast(a_fit_tbats, h = h)
+plot(a_pre_tbats, main = "TBATS Forecast")
+
 ```
 
 ## Neural Network
 ```{r}
-fit_nnetar <- nnetar(train_precipitation)
-pre_nnetar <- forecast(fit_nnetar, h = h)
-plot(pre_nnetar, main = "NNETAR Forecast")
+a_fit_nnetar <- nnetar(a_train_precipitation)
+a_pre_nnetar <- forecast(a_fit_nnetar, h = a_h)
+plot(a_pre_nnetar, main = "NNETAR Forecast")
 ```
+## Comparing performance metrics across models for Argentina
+```{r Comparing performance metrics across models}
 
-```{r}
-
-calculate_all_metrics <- function(forecast_obj, test_data) {
-  metrics <- accuracy(forecast_obj, test_data)["Test set", ]
+a_calculate_all_metrics <- function(a_forecast_obj, a_test_data) {
+  metrics <- accuracy(a_forecast_obj, a_test_data)["Test set", ]
   return(metrics)
 }
 
-accuracy_results <- data.frame(
+a_accuracy_results <- data.frame(
   Model = c("ARIMA", "STL + ETS", "ARIMA + Fourier", "TBATS", "NNETAR"),
   ME = c(
-    accuracy(pre_arima, test_precipitation)["Test set", "ME"],
-    accuracy(pre_stl_ets, test_precipitation)["Test set", "ME"],
-    accuracy(pre_fourier, test_precipitation)["Test set", "ME"],
-    accuracy(pre_tbats, test_precipitation)["Test set", "ME"],
-    accuracy(pre_nnetar, test_precipitation)["Test set", "ME"]
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "ME"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "ME"],
+    #accuracy(a_pre_fourier, a_test_precipitation)["Test set", "ME"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "ME"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "ME"]
   ),
   RMSE = c(
-    accuracy(pre_arima, test_precipitation)["Test set", "RMSE"],
-    accuracy(pre_stl_ets, test_precipitation)["Test set", "RMSE"],
-    accuracy(pre_fourier, test_precipitation)["Test set", "RMSE"],
-    accuracy(pre_tbats, test_precipitation)["Test set", "RMSE"],
-    accuracy(pre_nnetar, test_precipitation)["Test set", "RMSE"]
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "RMSE"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "RMSE"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "RMSE"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "RMSE"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "RMSE"]
   ),
   MAE = c(
-    accuracy(pre_arima, test_precipitation)["Test set", "MAE"],
-    accuracy(pre_stl_ets, test_precipitation)["Test set", "MAE"],
-    accuracy(pre_fourier, test_precipitation)["Test set", "MAE"],
-    accuracy(pre_tbats, test_precipitation)["Test set", "MAE"],
-    accuracy(pre_nnetar, test_precipitation)["Test set", "MAE"]
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "MAE"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "MAE"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "MAE"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "MAE"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "MAE"]
   ),
   MAPE = c(
-    accuracy(pre_arima, test_precipitation)["Test set", "MAPE"],
-    accuracy(pre_stl_ets, test_precipitation)["Test set", "MAPE"],
-    accuracy(pre_fourier, test_precipitation)["Test set", "MAPE"],
-    accuracy(pre_tbats, test_precipitation)["Test set", "MAPE"],
-    accuracy(pre_nnetar, test_precipitation)["Test set", "MAPE"]
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "MAPE"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "MAPE"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "MAPE"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "MAPE"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "MAPE"]
   ),
   MASE = c(
-    accuracy(pre_arima, test_precipitation)["Test set", "MASE"],
-    accuracy(pre_stl_ets, test_precipitation)["Test set", "MASE"],
-    accuracy(pre_fourier, test_precipitation)["Test set", "MASE"],
-    accuracy(pre_tbats, test_precipitation)["Test set", "MASE"],
-    accuracy(pre_nnetar, test_precipitation)["Test set", "MASE"]
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "MASE"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "MASE"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "MASE"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "MASE"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "MASE"]
   )
 )
 
-accuracy_results_formatted <- accuracy_results %>%
+a_accuracy_results_formatted <- a_accuracy_results %>%
   arrange(RMSE) %>%  # Sort by RMSE
   mutate(across(where(is.numeric), round, 3))
 
-print(accuracy_results_formatted)
+print(a_accuracy_results_formatted)
 ```
+
+## Comparing plots of models all together
+```{r Comparing plots of models all together}
+
+autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
+   autolayer(a_pre_arima, PI=FALSE, series="ARIMA") +
+   autolayer(a_pre_stl_ets, PI=FALSE, series="STL+ETS") +
+   #autolayer(pre_fourier, PI=FALSE, series="ARIMA + Fourier") +
+   autolayer(a_pre_tbats,PI=FALSE, series="TBATS") +
+   autolayer(a_pre_nnetar,PI=FALSE, series="NN") +
+  xlab("Year") + 
+  ylab("Precipitation (mm)") + 
+  guides(colour = guide_legend(title = "Forecast")) 
+
+```
+
+```{r Comparing first 60 yrs and second 60 yrs}
+
+## Our data begins at 1901--we are lucky to be working with records from over more than 100 years.
+## Let's break the data into two parts, 1901-1962 and 1963-2024.
+## We want to then compare the mean of the high points and the mean of the low points to see if the mangitudes of the extremes are changing.
+
+```
+
+

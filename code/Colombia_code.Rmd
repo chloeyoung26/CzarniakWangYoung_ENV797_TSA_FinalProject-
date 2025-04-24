@@ -1,6 +1,6 @@
 ---
 title: "Colombia_code"
-authors: "Chloe"
+authors: "Chloe, Weilin, Gaby"
 output: pdf_document
 date: "2025-04-02"
 ---
@@ -54,76 +54,114 @@ nobs <- nrow(colombia_pre)
 ## Data Cleaning & TS Creation
 ```{r}
 
-monthly_data <- colombia_pre %>%
+c_monthly_data <- colombia_pre %>%
   select(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC)
 
-monthly_data_long <- monthly_data %>%
+c_monthly_data_long <- c_monthly_data %>%
   pivot_longer(cols = JAN:DEC, names_to = "Month", values_to = "Precipitation")
 
-monthly_data_long <- monthly_data_long %>%
+c_monthly_data_long <- c_monthly_data_long %>%
   mutate(Month_Num = match(tolower(Month), tolower(month.abb)),
          Date = as.Date(paste(YEAR, Month_Num, "01", sep = "-")),
          .before = 1) %>%
   arrange(Date)
 
-write.csv(monthly_data_long, "../data/colombiamonthly_data_long.csv", row.names = FALSE)
+write.csv(c_monthly_data_long, "../data/colombiamonthly_data_long.csv", row.names = FALSE)
 
-ts_monthly <- ts(monthly_data_long$Precipitation, 
+kable(head(c_monthly_data_long, 10),
+      caption = "First 10 Rows of Monthly Precipitation Data for Colombia")
+
+
+```
+
+## Creating Time Series Object
+```{r}
+
+c_ts_monthly <- ts(c_monthly_data_long$Precipitation, 
                  start = c(1901,1), frequency = 12)
 
 ```
 
+
 ## Initial Plots
 ```{r}
-autoplot(ts_monthly) +
+autoplot(c_ts_monthly) +
   ggtitle("Monthly Precipitation Time Series (Colombia)") +
   xlab("Year") +
   ylab("Precipitation (mm)") +
   theme_minimal()
 
 par(mfrow=c(1,2))
-acf(ts_monthly, lag.max = 48, main="ACF (Colombia)")
-pacf(ts_monthly, lag.max = 48, main="PACF (Colombia)")
+acf(c_ts_monthly, lag.max = 48, main="ACF (Colombia)")
+pacf(c_ts_monthly, lag.max = 48, main="PACF (Colombia)")
 par(mfrow=c(1,1))
 ```
+**Interpretation:** The time series graph seems to show seasonality as there are visible peaks and troughs, consistent with a seasonal climate.There’s no clear upward or downward trend, suggesting the mean precipitation level has remained relatively stable over time. Moreover, although there’s variation in the amplitude showing more extreme years, this doesn’t appear to be systematically increasing or decreasing.
+
+The ACF shows a wave like pattern, and the significant autocorrelation at multiple repetitive lags suggests strong seasonality, likely due to Colombia's bi-modal rainy seasons. The PACF has a significant spike at lag 1 and smaller spikes at subsequent lags, suggesting  a short-term auto regressive (AR) component, where current precipitation is influenced by the previous month or two.
+
 
 ## Testing and Training
 ```{r}
-train_precipitation <- window(ts_monthly, end = c(2020, 12))
+c_train_precipitation <- window(c_ts_monthly, end = c(2020, 12))
 
-h <- 240
+c_h <- 240
 
-total_months <- length(ts_monthly)
+c_total_months <- length(c_ts_monthly)
 
-test_precipitation <- window(ts_monthly, start = c(2021, 1), end = c(2024, 12))
+c_test_precipitation <- window(c_ts_monthly, start = c(2021, 1), end = c(2024, 12))
 
-autoplot(train_precipitation)
-autoplot(test_precipitation)
+autoplot(c_train_precipitation)
+autoplot(c_test_precipitation)
 ```
 
 ## Decomposing Time Series
 ```{r}
 
-# Decompose
-decompose_monthly <- decompose(ts_monthly,"additive")
-plot(decompose_monthly)
+# Decompose using additive model
+c_decompose_monthly <- decompose(c_ts_monthly,"additive")
+plot(c_decompose_monthly)
 
 #Creating non-seasonal time series
-deseasonal_monthly <- seasadj(decompose_monthly)  
+c_deseasonal_monthly <- seasadj(c_decompose_monthly)  
+
+# Decompose using multiplicative
+c_mult_decompose_monthly <- decompose(c_ts_monthly, "multiplicative")
+plot(c_mult_decompose_monthly)
 
 ```
+**Interpretation:** 
+Additive Model - the trend shows some variability across the years, but there's no clear increasing or decreasing pattern over time, more just oscillation representing variability instead of a linear trend.The seasonal component is constant over time, showing strong seasonality over the years, which is logical given rain patterns. The residuals appear roughly stable, with some years having anomylous peaks and trough representing random occurrences, but the centered nature of the residual component demonstrates that the additive model is a relatively good fit.
+
+Multiplicative Model - The trend component is practically the same as in the additive model indicating that there is no increasing or decreasing linear trend.The seasonal component also looks the same, even though now the seasonal component is proportional to the trend, indicating no major changes. The residuals also appear relatively stable with some anomilies (more than in the additive model).
+
+
+## Detrending
+```{r}
+
+c_nvar2 <- ncol(c_monthly_data_long) - 1
+c_nobs2 <- nrow(c_monthly_data_long)
+t <- c(1:c_nobs2)
+
+# Fit a linear trend to TS
+c_linear_trend_model <- lm(c_monthly_data_long$Precipitation ~ t)
+summary(c_linear_trend_model)
+
+```
+**Interpretation:**
+The slope is -0.000839mm/month of rain, indicating a very small but slight negative trend in precipitation. Nonetheless, the p-value is 0.852, which is considerably higher than 0.05, meaning that it's not statistically significant. The t value of 0.187 is also very close to 0 which indicates no meaningful relationship between monthly precipitation and time.
 
 ## ARIMA
 ```{r}
 
-fit_arima <- auto.arima(train_precipitation)
-pre_arima <- forecast(fit_arima, h = 360)
+c_fit_arima <- auto.arima(c_train_precipitation)
+c_pre_arima <- forecast(c_fit_arima, h = 360)
 
-plot(pre_arima, main = "ARIMA Forecast (Colombia)")
+plot(c_pre_arima, main = "ARIMA Forecast (Colombia)")
 
 #Plot model + observed data
-autoplot(ts_monthly) +
-  autolayer(pre_arima, series="ARIMA",PI=FALSE) +
+autoplot(c_ts_monthly) +
+  autolayer(c_pre_arima, series="ARIMA",PI=FALSE) +
   ylab("Precipitation (mm)")
 
 ```
@@ -131,12 +169,12 @@ autoplot(ts_monthly) +
 ## STL + ETS
 ```{r}
 
-pre_stl_ets <- stlf(train_precipitation, h = 360, method = "ets")
-plot(pre_stl_ets, main = "STL + ETS Forecast (Colombia)")
+c_pre_stl_ets <- stlf(c_train_precipitation, h = 360, method = "ets")
+plot(c_pre_stl_ets, main = "STL + ETS Forecast (Colombia)")
 
 #Plot model + observed data
-autoplot(ts_monthly) +
-  autolayer(pre_stl_ets, series="STL + ETS",PI=FALSE) +
+autoplot(c_ts_monthly) +
+  autolayer(c_pre_stl_ets, series="STL + ETS",PI=FALSE) +
   ylab("Precipitation (mm)")
 
 ```
@@ -145,16 +183,16 @@ autoplot(ts_monthly) +
 ```{r}
 
 K <- 6
-fourier_train <- fourier(train_precipitation, K = K)
-fourier_future <- fourier(train_precipitation, K = K, h = 360)
-fit_fourier <- auto.arima(train_precipitation, xreg = fourier_train, seasonal = FALSE)
-pre_fourier <- forecast(fit_fourier, xreg = fourier_future, h = 360)
+c_fourier_train <- fourier(c_train_precipitation, K = K)
+c_fourier_future <- fourier(c_train_precipitation, K = K, h = 360)
+c_fit_fourier <- auto.arima(c_train_precipitation, xreg = c_fourier_train, seasonal = FALSE)
+c_pre_fourier <- forecast(c_fit_fourier, xreg = c_fourier_future, h = 360)
 
-plot(pre_fourier, main = "ARIMA + Fourier Forecast (Colombia)")
+plot(c_pre_fourier, main = "ARIMA + Fourier Forecast (Colombia)")
 
 #Plot model + observed data
-autoplot(ts_monthly) +
-  autolayer(pre_fourier, series="ARIMA + Fourier terms",PI=FALSE) +
+autoplot(c_ts_monthly) +
+  autolayer(c_pre_fourier, series="ARIMA + Fourier terms",PI=FALSE) +
   ylab("Precipitation (mm)")
 
 ```
@@ -162,13 +200,13 @@ autoplot(ts_monthly) +
 ## TBATS
 ```{r}
 
-fit_tbats <- tbats(train_precipitation)
-pre_tbats <- forecast(fit_tbats, h = 360)
-plot(pre_tbats, main = "TBATS Forecast (Colombia)")
+c_fit_tbats <- tbats(c_train_precipitation)
+c_pre_tbats <- forecast(c_fit_tbats, h = 360)
+plot(c_pre_tbats, main = "TBATS Forecast (Colombia)")
 
 #Plot model + observed data
-autoplot(ts_monthly) +
-  autolayer(pre_tbats, series="TBATS",PI=FALSE) +
+autoplot(c_ts_monthly) +
+  autolayer(c_pre_tbats, series="TBATS",PI=FALSE) +
   ylab("Precipitation (mm)")
 
 ```
@@ -176,13 +214,13 @@ autoplot(ts_monthly) +
 ## Neural Network
 ```{r}
 
-fit_nnetar <- nnetar(train_precipitation)
-pre_nnetar <- forecast(fit_nnetar, h = 360)
-plot(pre_nnetar, main = "NNETAR Forecast (Colombia)")
+c_fit_nnetar <- nnetar(c_train_precipitation)
+c_pre_nnetar <- forecast(c_fit_nnetar, h = 360)
+plot(c_pre_nnetar, main = "NNETAR Forecast (Colombia)")
 
 #Plot model + observed data
-autoplot(ts_monthly) +
-  autolayer(pre_nnetar, series="Neural Network",PI=FALSE) +
+autoplot(c_ts_monthly) +
+  autolayer(c_pre_nnetar, series="Neural Network",PI=FALSE) +
   ylab("Precipitation (mm)")
 
 ```
@@ -192,59 +230,76 @@ autoplot(ts_monthly) +
 ```{r}
 
 #Model 1: ARIMA
-ARIMA_scores <- accuracy(pre_arima$mean,test_precipitation)  
+c_ARIMA_scores <- accuracy(c_pre_arima$mean,c_test_precipitation)  
 
 #Model 2: STL + ETS
-ETS_scores <- accuracy(pre_stl_ets$mean,test_precipitation)  
+c_ETS_scores <- accuracy(c_pre_stl_ets$mean,c_test_precipitation)  
 
 #Model 3: ARIMA + Fourier 
-ARIMA_scores <- accuracy(pre_fourier$mean,test_precipitation)
+c_ARIMAF_scores <- accuracy(c_pre_fourier$mean,c_test_precipitation)
 
 # Model 4:  TBATS 
-TBATS_scores <- accuracy(pre_tbats$mean,test_precipitation)
+c_TBATS_scores <- accuracy(c_pre_tbats$mean,c_test_precipitation)
 
 # Model 5:  Neural Network 
-NN_scores <- accuracy(pre_nnetar$mean,test_precipitation)
+c_NN_scores <- accuracy(c_pre_nnetar$mean,c_test_precipitation)
 
 ```
 
 ```{r}
 
 #create data frame
-scores <- as.data.frame(
-  rbind(ARIMA_scores, ETS_scores, ARIMA_scores, TBATS_scores, NN_scores)
+c_scores <- as.data.frame(
+  rbind(c_ARIMA_scores, c_ETS_scores, c_ARIMA_scores, c_TBATS_scores, c_NN_scores)
   )
-row.names(scores) <- c("ARIMA", "STL+ETS", "ARIMA+Fourier","TBATS","NN")
+row.names(c_scores) <- c("ARIMA", "STL+ETS", "ARIMA+Fourier","TBATS","NN")
 
 #choose model with lowest RMSE
-best_model_index <- which.min(scores[,"RMSE"])
-cat("The best model by RMSE is:", row.names(scores[best_model_index,])) 
+c_best_model_index <- which.min(c_scores[,"RMSE"])
+cat("The best model by RMSE is:", row.names(c_scores[c_best_model_index,])) 
 
 ```
 
 ```{r}
 
-kbl(scores, 
+kbl(c_scores, 
       caption = "Forecast Accuracy for Precipitation in Colombia",
-      digits = array(5,ncol(scores))) %>%
+      digits = array(5,ncol(c_scores))) %>%
   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position") %>%
   #highlight model with lowest RMSE
-  kable_styling(latex_options="striped", stripe_index = which.min(scores[,"RMSE"]))
+  kable_styling(latex_options="striped", stripe_index = which.min(c_scores[,"RMSE"]))
 
 ```
 
 ## Visual Model Comparison
 ```{r}
 
-autoplot(test_precipitation) +
-  autolayer(pre_arima, PI=FALSE, series="ARIMA") +
-  autolayer(pre_stl_ets, PI=FALSE, series="STL+ETS") +
-  autolayer(pre_fourier, PI=FALSE, series="ARIMA + Fourier") +
-  autolayer(pre_tbats,PI=FALSE, series="TBATS") +
-  autolayer(pre_nnetar,PI=FALSE, series="NN") +
+autoplot(c_test_precipitation) +
+  autolayer(c_pre_arima, PI=FALSE, series="ARIMA") +
+  autolayer(c_pre_stl_ets, PI=FALSE, series="STL+ETS") +
+  autolayer(c_pre_fourier, PI=FALSE, series="ARIMA + Fourier") +
+  autolayer(c_pre_tbats,PI=FALSE, series="TBATS") +
+  autolayer(c_pre_nnetar,PI=FALSE, series="NN") +
   xlab("Year") + ylab("Precipitation(mm)") + 
+  ggtitle("Colombia Visual Model Comparison") + 
   guides(colour=guide_legend(title="Forecast"))
 
 
 ```
+
+**Interpretation:**
+ARIMA:
+The ARIMA model captures seasonality relatively well, but the forecast band is wide, indicating increasing uncertainty over time. It has the lowest RMSE meaning the smallest magnitude of error and the best Theil U score, indicating that the model performs well compared to a naive model. 
+
+STL + ETS:
+The STL + ETS model shows a smooth forecast curve with seasonality retained. Although the variance increases, it remains relatively controlled. The model has the best MAPE, meaning that the average magnitude of the errors is the lowest, and the best residual autocorrelation, indicating that more of the errors are random and not correlated with previous error.
+
+ARIMA + Fourier:
+This model is similar to regular ARIMA, but it captures cyclical seasonal components more clearly, which may not be so necessary here since the accuracy scores are the same as the ARIMA model.
+
+TBATS:
+TBATS shows an aggressive increase in forecast uncertainty, which may indicate model over fitting or extrapolation issues. The forecast seems relatively unstable after 2030, and none of the accuracy scores outperform the other models, indicating that it isn't the best fit.
+
+NNETAR:
+This model captures the general seasonal shape, but the forecast appears more rigid and less sensitive to variation. It is the worst performer across the models, with a high RMSE indicating a high magnitude of error, a high MAPE, and the worst Theil's U. Therefore, NNETAR isn't a good fit.
 
