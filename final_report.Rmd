@@ -248,8 +248,8 @@ pacf(a_ts_monthly, lag.max = 48, main="PACF (Argentina)")
 
 ```
 
-For Argentina, the time series plot shows clear seasonality with equally-spaced peaks and troughs as time walks along the x-axis. There is not such a clear upward or downward trend component, so it will be interesting to decompose the series in the following section. The time series plot, itself, would not be reason to hypothesize that mean precipitation has been changing significantly over time. Moreover, although variation in the amplitude visibly might show more extreme peaks grouped between 1980-2000, conclusions cannot be drawn about whether the magnitude of seasonality has systematically increased or decreased over time.
-
+For Argentina, the time series plot shows clear seasonality with equally-spaced peaks and troughs as time walks along the x-axis. There is not such a clear upward or downward trend component, so it will be interesting to decompose the series in the following section. The time series plot, itself, would not be reason to hypothesize that mean precipitation has been changing significantly over time. Moreover, although variation in the amplitude visibly might show more extreme peaks grouped between 1980-2000, conclusions cannot be drawn about whether the magnitude of seasonality has systematically increased or decreased over time.\
+\
 The ACF shows a wave-like pattern with peaks at each lag, but does not show slow decay. The equally-spaced wave pattern with spikes at each lag indicates the possibility of what one would certainly expect to be a seasonal component, likely due to a rainy season present across much of the country. The PACF has a significant spike at lag 1 and shows slow decay, with smaller spikes at subsequent lags. This suggests the series might have a short-term auto regressive (AR) component, where current precipitation is influenced by the previous month or two.
 
 ### Exploratory Analysis - Decomposing and Detrending 
@@ -322,9 +322,37 @@ The slope is -0.000333mm/month of rain, indicating a very small but slight negat
 
 #### Decomposing Argentina series
 
+```{r Decompse ARG, echo=FALSE}
+# Decompose using additive
+a_add_decompose_monthly <- decompose(a_ts_monthly,"additive")
+plot(a_add_decompose_monthly)
+
+# Creating non-seasonal time series
+a_deseasonal_monthly <- seasadj(a_add_decompose_monthly)  
+
+# Decompose using multiplicative
+## In case the magnitude of the seasonal pattern depends on the magnitude/level of the data, which is not clearly true, but it might be worth inspection. We have a question around WHETHER the magnitude of seasonality changes in relation to time.
+a_mult_decompose_monthly <- decompose(a_ts_monthly, "multiplicative")
+plot(a_mult_decompose_monthly)
+```
 
 
 #### Detrending Argentina series
+
+```{r Detrend ARG, echo=FALSE}
+
+a_nvar2 <- ncol(a_monthly_data_long) - 1
+a_nobs2 <- nrow(a_monthly_data_long)
+t <- c(1:a_nobs2)
+
+# Fit a linear trend to TS
+a_linear_trend_model <- lm(a_monthly_data_long$Precipitation ~ t)
+summary(a_linear_trend_model)
+
+```
+\
+Fitting a linear trend to the Argentina time series for monthly precipitation, the slope is 0.0057 mm/month of rain with p-value well below 0.05. This would indicate a very small but slight positive trend in precipitation. The t value of 4.368 is not as close to zero as for Colombia and Brazil; there is some confidence in mean precipitation increasing slightly for Argentina.
+\
 
 **Models** 
 The data was split into training and testing data sets. The training data set covered January 1901 to December 2020, and the testing data set included January 2021 to December 2024. Then, five models were select to apply to the training data:
