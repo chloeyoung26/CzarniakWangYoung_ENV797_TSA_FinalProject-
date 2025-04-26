@@ -351,10 +351,10 @@ summary(a_linear_trend_model)
 
 ```
 \
-Fitting a linear trend to the Argentina time series for monthly precipitation, the slope is 0.0057 mm/month of rain with p-value well below 0.05. This would indicate a very small but slight positive trend in precipitation. The t value of 4.368 is not as close to zero as for Colombia and Brazil; there is some confidence in mean precipitation increasing slightly for Argentina.
+Fitting a linear trend to the Argentina time series for monthly precipitation, the slope is 0.0057 mm/month of rain with p-value well below 0.05 (1.343e-05). This would indicate a very small but slight positive trend in precipitation. The t value of 4.368 is not as close to zero as for Colombia and Brazil; there is some confidence in mean precipitation increasing slightly over time for Argentina.
 \
 
-**Models** 
+### Models
 The data was split into training and testing data sets. The training data set covered January 1901 to December 2020, and the testing data set included January 2021 to December 2024. Then, five models were select to apply to the training data:
 
 1.  ARIMA
@@ -364,6 +364,8 @@ The data was split into training and testing data sets. The training data set co
 5.  Neural Network Autoregression
 
 Each model generated a forecast and their accuracies were assessed using the metrics ME, RMSE, MAE, MPE, MAPE, ACF1, and Theil’s U. Finally, an overlay plot with all forecasts plotted on one graph was generated, allowing for visual comparison between models.
+
+#### Colombia
 
 ```{r testing and training colombia, echo = FALSE}
 c_train_precipitation <- window(c_ts_monthly, end = c(2020, 12))
@@ -465,6 +467,9 @@ grid.arrange(c_g1_titled, c_g2_titled, c_g3_titled, c_g4_titled, c_g5_titled, nc
 
 ```
 
+
+#### Brazil 
+
 ```{r testing and training brazil, echo = FALSE}
 b_train_precipitation <- window(b_ts_monthly, end = c(2020, 12))
 
@@ -561,7 +566,9 @@ lines(b_test_precipitation, col = "black")
 par(mfrow = c(1, 1))
 ```
 
-**Accuracy Metrics**
+### Accuracy Metrics
+
+#### Colombia
 
 ```{r colombia, echo = FALSE}
 
@@ -601,6 +608,9 @@ kbl(c_scores,
   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position") 
 ```
 
+
+#### Brazil
+
 ```{r brazil, , echo = FALSE}
 #Model 1: ARIMA
 b_ARIMA_scores <- accuracy(b_pre_arima$mean,b_test_precipitation)  
@@ -629,7 +639,9 @@ kbl(b_scores,
   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position")
 ```
 
-**Visual Model Comparison**
+### Visual Model Comparison
+
+#### Colombia
 
 ```{r, echo = FALSE}
 
@@ -647,14 +659,16 @@ autoplot(c_test_precipitation) +
 ```
 
 ARIMA: The ARIMA model captures seasonality relatively well, but the forecast band is wide, indicating increasing uncertainty over time. It has the lowest RMSE meaning the smallest magnitude of error and the best Theil U score, indicating that the model performs well compared to a naive model.
-
+\
 STL + ETS: The STL + ETS model shows a smooth forecast curve with seasonality retained. Although the variance increases, it remains relatively controlled. The model has the best MAPE, meaning that the average magnitude of the errors is the lowest, and the best residual autocorrelation, indicating that more of the errors are random and not correlated with previous error.
-
+\
 ARIMA + Fourier: This model is similar to regular ARIMA, but it captures cyclical seasonal components more clearly, which may not be so necessary here since the accuracy scores are the same as the ARIMA model.
-
+\
 TBATS: TBATS shows an aggressive increase in forecast uncertainty, which may indicate model over fitting or extrapolation issues. The forecast seems relatively unstable after 2030, and none of the accuracy scores outperform the other models, indicating that it isn't the best fit.
-
+\
 NNETAR: This model captures the general seasonal shape, but the forecast appears more rigid and less sensitive to variation. It is the worst performer across the models, with a high RMSE indicating a high magnitude of error, a high MAPE, and the worst Theil's U. Therefore, NNETAR isn't a good fit.
+
+#### Brazil
 
 ```{r brazil, echo = FALSE}
 autoplot(b_test_precipitation) +
@@ -685,7 +699,14 @@ Predicting changes in frequency and intensity of extreme precipitation events is
 
 # Contribution statement of this report
 
-Introduction, motivation, relevance, objectives, and limitations within the conclusion – Gaby Dataset and methods – Chloe Summary – Weilin Conclusion – Weilin & Chloe Code & analysis for Brazil – Weilin Code & analysis for Argentina – Gaby Code & analysis for Colombia – Chloe
+Introduction, motivation, relevance, objectives, and limitations within the conclusion – Gaby \
+Dataset and methods – Chloe \
+Summary – Weilin \
+Conclusion – Weilin & Chloe \
+Code & analysis for Brazil – Weilin \
+Code & analysis for Argentina – Gaby \
+Code & analysis for Colombia – Chloe\
+
 
 # Github repository link
 
