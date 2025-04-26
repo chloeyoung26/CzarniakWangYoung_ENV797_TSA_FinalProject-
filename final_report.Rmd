@@ -1,6 +1,5 @@
 ---
-title: Modeling precipitation patterns in South America due to the impact of water
-  availability on crop yields
+title: "Modeling precipitation patterns in South America due to the impact of water availability on crop yields"
 author: "Chloe Young, Gaby Czarniak, and Weilin Wang"
 date: "April 25, 2025"
 output:
@@ -30,8 +29,9 @@ Given data availability and the scope of this project, we evaluate the performan
 The dataset utilized was produced by the University of East Anglia’s Climate Research Unit (University of East Anglia - Climatic Research Unit, 2025). The first iteration of this data was published in 2000, and it has been continuously updated and upgraded since. The most recent version was updated just recently on March 19th of 2025, and it includes a high resolution, monthly 0.5 degree latitude by 0.5 degree longitude grid of land based observations from 1901 to 2024. They look at 10 different variables: Mean 2m temperature, diurnal 2m temperature range, precipitation rate, vapor pressure, wet days, cloud cover, frost days, minimum 2m temperature, maximum 2m temperature, and potential evapo-transpiration. Due to the relationship between crop yields and precipitation, and the importance of the agricultural sector in Brazil, Argentina, and Colombia, this report focused on the precipitation variable. The precipitation data was separated and imported to R studio in an Excel file: this initial data included monthly precipitation, seasonal values (MAM - spring, JJA -summer, SON - autumn, DJF - winter), and annual precipitation.
 
 ## Methods
-
-**Data Processing & Time Series Creation** An initial search of the data was conducted to identify any missing values. Only the “DJF” column had one missing value—an NA. This NA was filled using the DJF column means for the sake of continuity, but the DJF column ended up not being utilized in the processes. Instead, monthly precipitation values were utilized, since this provided the most accurate depiction of seasonal patterns and additional trends. To format the data, the monthly precipitation columns and their dates were selected, and pivot_longer() was used to reshape the data so that there was a Date column including both month and year, which allowed for a chronological precipitation column. This reshaped dataset was exported as countrymonthly_data_long.csv. Using this cleaned data, a univariable monthly time series object beginning in January 1901 with a frequency of 12 was created.
+\
+### Data Processing & Time Series Creation
+An initial search of the data was conducted to identify any missing values. Only the “DJF” column had one missing value—an NA. This NA was filled using the DJF column means for the sake of continuity, but the DJF column ended up not being utilized in the processes. Instead, monthly precipitation values were utilized, since this provided the most accurate depiction of seasonal patterns and additional trends. To format the data, the monthly precipitation columns and their dates were selected, and pivot_longer() was used to reshape the data so that there was a Date column including both month and year, which allowed for a chronological precipitation column. This reshaped dataset was exported as countrymonthly_data_long.csv. Using this cleaned data, a univariable monthly time series object beginning in January 1901 with a frequency of 12 was created.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,tidy.opts=list(width.cutoff=60), tidy=TRUE) 
@@ -99,6 +99,30 @@ nvar <- ncol(brazil_pre) - 1
 nobs <- nrow(brazil_pre)
 ```
 
+```{r Import Argentina, echo=FALSE, include=FALSE}
+
+# Read Arg data from Excel file
+arg_pre_uncleaned <- read.xlsx(xlsxFile = './data/Argentina_precipitation.xlsx')
+
+# Check for NAs
+colSums(is.na(arg_pre_uncleaned)) # DJF has one NA
+
+# Interpolating a value for mean
+arg_pre_uncleaned$DJF[is.na(arg_pre_uncleaned$DJF)] <- mean(arg_pre_uncleaned$DJF, 
+                                                                  na.rm = TRUE)
+colSums(is.na(arg_pre_uncleaned))
+
+write.csv(arg_pre_uncleaned, './data/processed_argentina_precipitation.csv', 
+          row.names = FALSE)
+
+arg_pre <- read_csv('./data/processed_argentina_precipitation.csv')
+
+# Inspect precipitation data
+head(arg_pre)
+a_nvar <- ncol(arg_pre) - 1
+a_nobs <- nrow(arg_pre)
+```
+
 ```{r clean colombia, echo = FALSE}
 
 c_monthly_data <- colombia_pre %>%
@@ -139,16 +163,39 @@ kable(head(b_monthly_data_long, 10),
 
 ```
 
+```{r AR Data Cleaning, echo = FALSE}
+
+a_monthly_data <- arg_pre %>%
+  select(YEAR, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC)
+
+a_monthly_data_long <- a_monthly_data %>%
+  pivot_longer(cols = JAN:DEC, names_to = "Month", values_to = "Precipitation")
+
+a_monthly_data_long <- a_monthly_data_long %>%
+  mutate(Month_Num = match(tolower(Month), tolower(month.abb)),
+         Date = as.Date(paste(YEAR, Month_Num, "01", sep = "-")),
+         .before = 1) %>%
+  arrange(Date)
+
+write.csv(a_monthly_data_long, './data/argentinamonthly_data_long.csv', row.names = FALSE)
+
+```
+
 ```{r ts creation colombia brazil and a, echo = FALSE}
 
 c_ts_monthly <- ts(c_monthly_data_long$Precipitation, 
                  start = c(1901,1), frequency = 12)
 b_ts_monthly <- ts(b_monthly_data_long$Precipitation, 
                  start = c(1901,1), frequency = 12)
+a_ts_monthly <- ts(a_monthly_data_long$Precipitation, 
+                 start = c(1901,1), frequency = 12)
 
 ```
 
-**Exploratory Analysis - Plots, ACF, PACF** To visualize the data, a plot of the time series object was created, and this was followed by an exploration of its patterns and autocorrelation using ACF and PACF. This information was helpful in deciding which models to use, as it provided information on the seasonality and auto regression.
+### Exploratory Analysis - Plots, ACF, PACF
+To visualize the data, a plot of the time series object was created for each country, and this was followed by an exploration of its patterns and autocorrelation using ACF and PACF. This information was helpful in deciding which models to use, as it provided information on the seasonality and auto regression.
+
+#### Colombia
 
 ```{r colombia initial plots, echo = FALSE}
 autoplot(c_ts_monthly) +
@@ -167,6 +214,8 @@ The time series graph seems to show seasonality as there are visible peaks and t
 
 The ACF shows a wave like pattern, and the significant autocorrelation at multiple repetitive lags suggests strong seasonality, likely due to Colombia's bi-modal rainy seasons. The PACF has a significant spike at lag 1 and smaller spikes at subsequent lags, suggesting a short-term auto regressive (AR) component, where current precipitation is influenced by the previous month or two.
 
+#### Brazil
+
 ```{r brazil initial plots, echo = FALSE}
 autoplot(b_ts_monthly) +
   ggtitle("Monthly Precipitation Time Series (Brazil)") +
@@ -182,7 +231,32 @@ par(mfrow=c(1,1))
 
 The Brazil time series plot demonstrates a clear seasonal pattern with consistent cycles of wet and dry periods throughout the 120-year record. The precipitation values typically range from around 50mm to 250mm depending on the season. The ACF plot shows a strong wave-like pattern with significant autocorrelation at lag 12, confirming the annual seasonality in Brazil's precipitation patterns. This regular oscillation indicates well-defined wet and dry seasons that repeat annually. The PACF displays significant spikes at lag 1 and decreasing spikes at subsequent lags, suggesting a short-term autoregressive component where precipitation in one month is influenced by the previous month's conditions.
 
-**Exploratory Analysis - Decomposing and Detrending** The time series was also decomposed using both additive and multiplicative models in order to separate trend, seasonal, and residual components, allowing for more clear visualization prior to creating models. Following this, a linear trend model was fit to the time series object.
+#### Argentina
+
+```{r AR Initial ts plots}
+
+autoplot(a_ts_monthly) +
+  ggtitle("Monthly Precipitation Time Series (Argentina)") +
+  xlab("Year") +
+  ylab("Precipitation (mm)") +
+  theme_minimal()
+
+par(mfrow=c(1,2))
+acf(a_ts_monthly, lag.max = 48, main="ACF (Argentina)")
+pacf(a_ts_monthly, lag.max = 48, main="PACF (Argentina)")
+# par(mfrow=c(1,1))
+
+```
+
+For Argentina, the time series plot shows clear seasonality with equally-spaced peaks and troughs as time walks along the x-axis. There is not such a clear upward or downward trend component, so it will be interesting to decompose the series in the following section. The time series plot, itself, would not be reason to hypothesize that mean precipitation has been changing significantly over time. Moreover, although variation in the amplitude visibly might show more extreme peaks grouped between 1980-2000, conclusions cannot be drawn about whether the magnitude of seasonality has systematically increased or decreased over time.
+
+The ACF shows a wave-like pattern with peaks at each lag, but does not show slow decay. The equally-spaced wave pattern with spikes at each lag indicates the possibility of what one would certainly expect to be a seasonal component, likely due to a rainy season present across much of the country. The PACF has a significant spike at lag 1 and shows slow decay, with smaller spikes at subsequent lags. This suggests the series might have a short-term auto regressive (AR) component, where current precipitation is influenced by the previous month or two.
+
+### Exploratory Analysis - Decomposing and Detrending 
+
+The time series was also decomposed using both additive and multiplicative models in order to separate trend, seasonal, and residual components, allowing for more clear visualization prior to creating models. Following this, a linear trend model was fit to the time series object.
+
+#### Decomposing Colombia series
 
 ```{r decomposing colombia, echo = FALSE}
 
@@ -199,6 +273,8 @@ plot(c_mult_decompose_monthly)
 
 ```
 
+#### Detrending Colombia series
+
 ```{r detrending colombia, echo = FALSE}
 
 c_nvar2 <- ncol(c_monthly_data_long) - 1
@@ -213,6 +289,8 @@ summary(c_linear_trend_model)
 
 The slope is -0.000839mm/month of rain, indicating a very small but slight negative trend in precipitation. Nonetheless, the p-value is 0.852, which is considerably higher than 0.05, meaning that it's not statistically significant. The t value of 0.187 is also very close to 0 which indicates no meaningful relationship between monthly precipitation and time.
 
+#### Decomposing Brazil series
+
 ```{r decomposing brazil, echo = FALSE}
 # Decompose
 b_decompose_monthly <- decompose(b_ts_monthly,"additive")
@@ -225,6 +303,8 @@ b_deseasonal_monthly <- seasadj(b_decompose_monthly)
 b_mult_decompose_monthly <- decompose(b_ts_monthly, "multiplicative")
 plot(b_mult_decompose_monthly)
 ```
+
+#### Detrending Brazil series
 
 ```{r detrending brazil, echo = FALSE}
 
@@ -239,6 +319,12 @@ summary(b_linear_trend_model)
 ```
 
 The slope is -0.000333mm/month of rain, indicating a very small but slight negative trend in precipitation. Nonetheless, the p-value is 0.934, which is considerably higher than 0.05, meaning that it's not statistically significant. The t value of -0.083 is also very close to 0 which indicates no meaningful relationship between monthly precipitation and time. The extremely low R-squared value (4.667e-06) further confirms that time explains virtually none of the variation in Brazil's precipitation patterns over the 120-year period analyzed.
+
+#### Decomposing Argentina series
+
+
+
+#### Detrending Argentina series
 
 **Models** 
 The data was split into training and testing data sets. The training data set covered January 1901 to December 2020, and the testing data set included January 2021 to December 2024. Then, five models were select to apply to the training data:
