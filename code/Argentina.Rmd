@@ -114,7 +114,7 @@ a_test_precipitation <- window(a_ts_monthly, start = c(2021, 1), end = c(2024, 1
 a_add_decompose_monthly <- decompose(a_ts_monthly,"additive")
 plot(a_add_decompose_monthly)
 
-# Creating non-seasonal time series
+# Creating de-seasonal time series
 a_deseasonal_monthly <- seasadj(a_add_decompose_monthly)  
 
 # Decompose using multiplicative
@@ -133,6 +133,9 @@ t <- c(1:a_nobs2)
 a_linear_trend_model <- lm(a_monthly_data_long$Precipitation ~ t)
 summary(a_linear_trend_model)
 
+checkresiduals(a_linear_trend_model)
+# The seasonal component is, of course, not being modeled. No clear trend on the residuals series.
+
 ```
 
 
@@ -140,24 +143,31 @@ summary(a_linear_trend_model)
 ## ARIMA
 ```{r}
 a_fit_arima <- auto.arima(a_train_precipitation)
-a_pre_arima <- forecast(a_fit_arima, h = h)
+a_pre_arima <- forecast(a_fit_arima, h = 360)
+checkresiduals(a_pre_arima)
 
 plot(a_pre_arima, main = "ARIMA Forecast")
 ```
 
 ## STL + ETS
 ```{r}
-a_pre_stl_ets <- stlf(a_train_precipitation, h = h, method = "ets")
+
+a_pre_stl_ets <- stlf(a_train_precipitation, h = a_h, method = "ets")
+checkresiduals(a_pre_stl_ets)
 plot(a_pre_stl_ets, main = "STL + ETS Forecast")
+
 ```
 
 ## ARIMA + Fourier terms
 ```{r}
+
 a_K <- 6
-a_fourier_train <- fourier(a_train_precipitation, K = a_K)
+a_fourier_train <- fourierv(a_train_precipitation, K = a_K)
 a_fourier_future <- fourier(a_train_precipitation, K = a_K, h = a_h)
 a_fit_fourier <- auto.arima(a_train_precipitation, xreg = a_fourier_train, seasonal = FALSE)
 a_pre_fourier <- forecast(a_fit_fourier, xreg = a_fourier_future, h = a_h)
+
+checkresiduals(a_pre_fourier)
 
 plot(a_pre_fourier, main = "ARIMA + Fourier Forecast")
 ```
@@ -189,7 +199,7 @@ a_accuracy_results <- data.frame(
   ME = c(
     accuracy(a_pre_arima, a_test_precipitation)["Test set", "ME"],
     accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "ME"],
-    #accuracy(a_pre_fourier, a_test_precipitation)["Test set", "ME"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "ME"],
     accuracy(a_pre_tbats, a_test_precipitation)["Test set", "ME"],
     accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "ME"]
   ),
@@ -236,7 +246,7 @@ print(a_accuracy_results_formatted)
 autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
    autolayer(a_pre_arima, PI=FALSE, series="ARIMA") +
    autolayer(a_pre_stl_ets, PI=FALSE, series="STL+ETS") +
-   #autolayer(pre_fourier, PI=FALSE, series="ARIMA + Fourier") +
+   autolayer(a_pre_fourier, PI=FALSE, series="ARIMA + Fourier") +
    autolayer(a_pre_tbats,PI=FALSE, series="TBATS") +
    autolayer(a_pre_nnetar,PI=FALSE, series="NN") +
   xlab("Year") + 

@@ -655,7 +655,6 @@ autoplot(c_test_precipitation) +
   ggtitle("Colombia Visual Model Comparison") + 
   guides(colour=guide_legend(title="Forecast"))
 
-
 ```
 
 ARIMA: The ARIMA model captures seasonality relatively well, but the forecast band is wide, indicating increasing uncertainty over time. It has the lowest RMSE meaning the smallest magnitude of error and the best Theil U score, indicating that the model performs well compared to a naive model.
