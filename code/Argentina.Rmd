@@ -77,6 +77,16 @@ write.csv(a_monthly_data_long, './data/argentinamonthly_data_long.csv', row.name
 a_ts_monthly <- ts(a_monthly_data_long$Precipitation, 
                  start = c(1901,1), frequency = 12)
 
+# Handle outliers
+a_ts_monthly_tsclean <- forecast::tsclean(a_ts_monthly_withoutliers)  #object should be a time series
+
+autoplot(a_ts_monthly_tsclean, series="Precipitation Clean") +
+  autolayer(a_ts_monthly_withoutliers, series="Precipitation Raw") +
+  ylab("Monthly Precipitation in Argentina") 
+
+# Note we only replaced missing data, algorithm did not identify any outliers for this data set.
+# Even running tsclean(), no values changed.
+
 ```
 
 ## Initial Plots
@@ -162,7 +172,7 @@ plot(a_pre_stl_ets, main = "STL + ETS Forecast")
 ```{r}
 
 a_K <- 6
-a_fourier_train <- fourierv(a_train_precipitation, K = a_K)
+a_fourier_train <- fourier(a_train_precipitation, K = a_K)
 a_fourier_future <- fourier(a_train_precipitation, K = a_K, h = a_h)
 a_fit_fourier <- auto.arima(a_train_precipitation, xreg = a_fourier_train, seasonal = FALSE)
 a_pre_fourier <- forecast(a_fit_fourier, xreg = a_fourier_future, h = a_h)

@@ -626,6 +626,26 @@ a_pre_nnetar <- forecast(a_fit_nnetar, h = a_h)
 plot(a_pre_nnetar, main = "NNETAR Forecast")
 ```
 
+```{r ARG combined forecast plots, echo = FALSE}
+
+a_g1 <- as.ggplot(~plot(a_pre_arima, main = ""))
+a_g2 <- as.ggplot(~plot(a_pre_stl_ets, main = ""))
+a_g3 <- as.ggplot(~plot(a_pre_fourier, main = ""))
+a_g4 <- as.ggplot(~plot(a_pre_tbats, main = ""))
+a_g5 <- as.ggplot(~plot(a_pre_nnetar, main = ""))
+
+
+a_g1_titled <- arrangeGrob(a_g1, top = textGrob("ARIMA Forecast (Argentina)", gp = gpar(fontface = "bold")))
+a_g2_titled <- arrangeGrob(a_g2, top = textGrob("STL + ETS Forecast (Argentina)", gp = gpar(fontface = "bold")))
+a_g3_titled <- arrangeGrob(a_g3, top = textGrob("ARIMA + Fourier Forecast (Argentina)", gp = gpar(fontface = "bold")))
+a_g4_titled <- arrangeGrob(a_g4, top = textGrob("TBATS Forecast (Argentina)", gp = gpar(fontface = "bold")))
+a_g5_titled <- arrangeGrob(a_g5, top = textGrob("NNETAR Forecast (Argentina)", gp = gpar(fontface = "bold")))
+
+
+grid.arrange(a_g1_titled, a_g2_titled, a_g3_titled, a_g4_titled, a_g5_titled, ncol = 2)
+
+```
+
 ### Accuracy Metrics
 
 #### Colombia
@@ -752,6 +772,43 @@ a_accuracy_results_formatted <- a_accuracy_results %>%
 print(a_accuracy_results_formatted)
 ```
 
+```{r ARG individual model scores, echo = FALSE}
+
+#Model 1: ARIMA
+a_ARIMA_scores <- accuracy(a_pre_arima$mean,a_test_precipitation)  
+
+#Model 2: STL + ETS
+a_ETS_scores <- accuracy(a_pre_stl_ets$mean,a_test_precipitation)  
+
+#Model 3: ARIMA + Fourier 
+a_ARIMAF_scores <- accuracy(a_pre_fourier$mean,a_test_precipitation)
+
+# Model 4:  TBATS 
+a_TBATS_scores <- accuracy(a_pre_tbats$mean,a_test_precipitation)
+
+# Model 5:  Neural Network 
+a_NN_scores <- accuracy(a_pre_nnetar$mean,a_test_precipitation)
+
+```
+
+```{r ARG all scores together, echo = FALSE}
+
+#create data frame
+a_scores <- as.data.frame(
+  rbind(a_ARIMA_scores, a_ETS_scores, a_ARIMA_scores, a_TBATS_scores, a_NN_scores)
+  )
+row.names(a_scores) <- c("ARIMA", "STL+ETS", "ARIMA+Fourier","TBATS","NN")
+
+
+```
+
+```{r ARG score table, echo = FALSE}
+
+kbl(a_scores, 
+      caption = "Forecast Accuracy for Precipitation in Argentina",
+      digits = array(5,ncol(a_scores))) %>%
+  kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position") 
+```
 
 ### Visual Model Comparison
 
@@ -796,6 +853,8 @@ autoplot(b_test_precipitation) +
 
 The visual comparison of forecasting models for Brazil shows that all five models (ARIMA, STL+ETS, ARIMA+Fourier, TBATS, and Neural Network) capture the strong seasonal precipitation pattern. The ARIMA model demonstrates the best performance based on accuracy metrics, with the lowest RMSE (13.10) and best Theil's U score (0.29303). The forecast visualization shows consistent seasonal cycles continuing into the future, with precipitation ranging from approximately 50mm in dry months to 250mm in wet months. The forecast confidence bands widen gradually over time, representing increasing uncertainty in long-term predictions. All models maintain the same seasonal pattern without projecting any significant changes in seasonality or extreme events.
 
+#### Argentina
+
 ```{r ARG Comparing plots of models together}
 
 autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
@@ -809,6 +868,20 @@ autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
   guides(colour = guide_legend(title = "Forecast")) 
 
 ```
+
+**ARIMA**: The ARIMA model captures seasonality relatively well, but the forecast band is wide and widens over time, indicating increasing uncertainty. It has the second-highest RMSE, meaning the second-highest magnitude of error (as sensitive to outliers) and the highest MAE, or average magnitude of errors with less sensitivity to outliers. As a percentage, the average magnitude of errors of the ARIMA (MAPE) for Argentina is also second-highest.
+\
+**STL + ETS**: The STL + ETS model shows a smooth forecast curve with seasonality retained. This model does not do a good job of capturing and forecasting any non-seasonal cyclical patterns or random components. Uncertainty of the forecast increases over time, similarly to the ARIMA model. This is the model with the lowest, or best, MAPE, meaning it has the smallest average magnitude of the errors. It also has the second-lowest RMSE and MAE.
+\
+**ARIMA + Fourier**: This model had the largest-magnitude bias in its forecast (ME). Although similar to regular ARIMA, it performed better on RMSE and MAE scores.
+\
+**TBATS**: As in the forecasts for Colombia, TBATS shows an aggressive increase in forecast uncertainty over time. In the case of Argentina, however, the TBATS has the lowest RMSE and MAE scores and second-lowest MAPE.
+\
+**NNETAR**: The NNETAR was the model with the lowest-magnitude bias in the forecast. Nevertheless, the Neural Network model had the highest RMSE, second-highest MAE, and its MAPE score was the middle performer among models. 
+\
+MASE values, not shown here, were < 1 for all models, indicating that these models are not performing better than the naive model. 
+\
+To test if any of the above models would perform better without outliers, tsclean() was run on the time series object, but identified no outliers. Moving forward with all original maximum and minimum values was preferred anyway, given that this project sought to learn about exactly that: the *extreme* precipitation values over time. 
 
 ## Summary
 
