@@ -351,7 +351,7 @@ summary(a_linear_trend_model)
 
 ```
 \
-Fitting a linear trend to the Argentina time series for monthly precipitation, the slope is 0.0057 mm/month of rain with p-value well below 0.05 (1.343e-05). This would indicate a very small but slight positive trend in precipitation. The t value of 4.368 is not as close to zero as for Colombia and Brazil; there is some confidence in mean precipitation increasing slightly over time for Argentina.
+Fitting a linear trend to the Argentina time series for monthly precipitation, the slope is 0.0057 mm/month of rain with p-value well below 0.05 (1.343e-05). This would indicate a very small but slight positive trend in precipitation. The t value of 4.368 is not as close to zero as for Colombia and Brazil; there is some confidence that the null hypothesis that there is no change over time can be rejected and that mean precipitation increasing slightly over time for Argentina.
 \
 
 ### Models
@@ -566,6 +566,66 @@ lines(b_test_precipitation, col = "black")
 par(mfrow = c(1, 1))
 ```
 
+#### Argentina
+
+```{r ARG testing and training subsets}
+
+a_train_precipitation <- window(a_ts_monthly, end = c(2020, 12))
+
+a_h <- 240
+
+a_total_months <- length(ts_monthly)
+
+a_test_precipitation <- window(a_ts_monthly, start = c(2021, 1), end = c(2024, 12))
+
+```
+
+```{r ARG ARIMA}
+
+a_fit_arima <- auto.arima(a_train_precipitation)
+a_pre_arima <- forecast(a_fit_arima, h = 360)
+checkresiduals(a_pre_arima)
+
+plot(a_pre_arima, main = "ARIMA Forecast")
+
+```
+
+```{r ARG ETS and STL}
+
+a_pre_stl_ets <- stlf(a_train_precipitation, h = a_h, method = "ets")
+checkresiduals(a_pre_stl_ets)
+plot(a_pre_stl_ets, main = "STL + ETS Forecast")
+
+```
+
+```{r ARG ARIMA with Fourier}
+
+a_K <- 6
+a_fourier_train <- fourierv(a_train_precipitation, K = a_K)
+a_fourier_future <- fourier(a_train_precipitation, K = a_K, h = a_h)
+a_fit_fourier <- auto.arima(a_train_precipitation, xreg = a_fourier_train, seasonal = FALSE)
+a_pre_fourier <- forecast(a_fit_fourier, xreg = a_fourier_future, h = a_h)
+
+checkresiduals(a_pre_fourier)
+
+plot(a_pre_fourier, main = "ARIMA + Fourier Forecast")
+
+```
+
+```{r ARG TBATS}
+
+a_fit_tbats <- tbats(a_train_precipitation)
+a_pre_tbats <- forecast(a_fit_tbats, h = h)
+plot(a_pre_tbats, main = "TBATS Forecast")
+
+```
+
+```{r ARG Network}
+a_fit_nnetar <- nnetar(a_train_precipitation)
+a_pre_nnetar <- forecast(a_fit_nnetar, h = a_h)
+plot(a_pre_nnetar, main = "NNETAR Forecast")
+```
+
 ### Accuracy Metrics
 
 #### Colombia
@@ -639,6 +699,60 @@ kbl(b_scores,
   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position")
 ```
 
+```{r ARG Comparing performance metrics}
+
+a_calculate_all_metrics <- function(a_forecast_obj, a_test_data) {
+  metrics <- accuracy(a_forecast_obj, a_test_data)["Test set", ]
+  return(metrics)
+}
+
+a_accuracy_results <- data.frame(
+  Model = c("ARIMA", "STL + ETS", "ARIMA + Fourier", "TBATS", "NNETAR"),
+  ME = c(
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "ME"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "ME"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "ME"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "ME"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "ME"]
+  ),
+  RMSE = c(
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "RMSE"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "RMSE"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "RMSE"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "RMSE"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "RMSE"]
+  ),
+  MAE = c(
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "MAE"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "MAE"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "MAE"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "MAE"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "MAE"]
+  ),
+  MAPE = c(
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "MAPE"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "MAPE"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "MAPE"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "MAPE"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "MAPE"]
+  ),
+  MASE = c(
+    accuracy(a_pre_arima, a_test_precipitation)["Test set", "MASE"],
+    accuracy(a_pre_stl_ets, a_test_precipitation)["Test set", "MASE"],
+    accuracy(a_pre_fourier, a_test_precipitation)["Test set", "MASE"],
+    accuracy(a_pre_tbats, a_test_precipitation)["Test set", "MASE"],
+    accuracy(a_pre_nnetar, a_test_precipitation)["Test set", "MASE"]
+  )
+)
+
+a_accuracy_results_formatted <- a_accuracy_results %>%
+  arrange(RMSE) %>%  # Sort by RMSE
+  mutate(across(where(is.numeric), round, 3))
+
+print(a_accuracy_results_formatted)
+```
+
+
 ### Visual Model Comparison
 
 #### Colombia
@@ -681,6 +795,20 @@ autoplot(b_test_precipitation) +
 ```
 
 The visual comparison of forecasting models for Brazil shows that all five models (ARIMA, STL+ETS, ARIMA+Fourier, TBATS, and Neural Network) capture the strong seasonal precipitation pattern. The ARIMA model demonstrates the best performance based on accuracy metrics, with the lowest RMSE (13.10) and best Theil's U score (0.29303). The forecast visualization shows consistent seasonal cycles continuing into the future, with precipitation ranging from approximately 50mm in dry months to 250mm in wet months. The forecast confidence bands widen gradually over time, representing increasing uncertainty in long-term predictions. All models maintain the same seasonal pattern without projecting any significant changes in seasonality or extreme events.
+
+```{r ARG Comparing plots of models together}
+
+autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
+   autolayer(a_pre_arima, PI=FALSE, series="ARIMA") +
+   autolayer(a_pre_stl_ets, PI=FALSE, series="STL+ETS") +
+   autolayer(a_pre_fourier, PI=FALSE, series="ARIMA + Fourier") +
+   autolayer(a_pre_tbats,PI=FALSE, series="TBATS") +
+   autolayer(a_pre_nnetar,PI=FALSE, series="NN") +
+  xlab("Year") + 
+  ylab("Precipitation (mm)") + 
+  guides(colour = guide_legend(title = "Forecast")) 
+
+```
 
 ## Summary
 
