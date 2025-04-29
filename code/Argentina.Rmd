@@ -185,7 +185,7 @@ plot(a_pre_fourier, main = "ARIMA + Fourier Forecast")
 ## TBATS
 ```{r}
 a_fit_tbats <- tbats(a_train_precipitation)
-a_pre_tbats <- forecast(a_fit_tbats, h = h)
+a_pre_tbats <- forecast(a_fit_tbats, h = a_h)
 plot(a_pre_tbats, main = "TBATS Forecast")
 
 ```

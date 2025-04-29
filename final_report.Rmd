@@ -572,7 +572,7 @@ par(mfrow = c(1, 1))
 
 a_train_precipitation <- window(a_ts_monthly, end = c(2020, 12))
 
-a_h <- 240
+a_h <- 360
 
 a_total_months <- length(ts_monthly)
 
@@ -583,7 +583,7 @@ a_test_precipitation <- window(a_ts_monthly, start = c(2021, 1), end = c(2024, 1
 ```{r ARG ARIMA}
 
 a_fit_arima <- auto.arima(a_train_precipitation)
-a_pre_arima <- forecast(a_fit_arima, h = 360)
+a_pre_arima <- forecast(a_fit_arima, h = a_h)
 checkresiduals(a_pre_arima)
 
 plot(a_pre_arima, main = "ARIMA Forecast")
@@ -615,7 +615,7 @@ plot(a_pre_fourier, main = "ARIMA + Fourier Forecast")
 ```{r ARG TBATS}
 
 a_fit_tbats <- tbats(a_train_precipitation)
-a_pre_tbats <- forecast(a_fit_tbats, h = h)
+a_pre_tbats <- forecast(a_fit_tbats, h = a_h)
 plot(a_pre_tbats, main = "TBATS Forecast")
 
 ```
