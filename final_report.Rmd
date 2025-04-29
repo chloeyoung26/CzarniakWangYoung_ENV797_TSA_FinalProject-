@@ -30,7 +30,9 @@ The dataset utilized was produced by the University of East Anglia’s Climate R
 
 ## Methods
 \
-### Data Processing & Time Series Creation
+
+### Data Processing and Time Series Creation
+
 An initial search of the data was conducted to identify any missing values. Only the “DJF” column had one missing value—an NA. This NA was filled using the DJF column means for the sake of continuity, but the DJF column ended up not being utilized in the processes. Instead, monthly precipitation values were utilized, since this provided the most accurate depiction of seasonal patterns and additional trends. To format the data, the monthly precipitation columns and their dates were selected, and pivot_longer() was used to reshape the data so that there was a Date column including both month and year, which allowed for a chronological precipitation column. This reshaped dataset was exported as countrymonthly_data_long.csv. Using this cleaned data, a univariable monthly time series object beginning in January 1901 with a frequency of 12 was created.
 
 ```{r setup, include=FALSE}
@@ -181,6 +183,14 @@ write.csv(a_monthly_data_long, './data/argentinamonthly_data_long.csv', row.name
 
 ```
 
+```{r Show data for Arg, echo=FALSE, message=FALSE, warning=FALSE}
+
+kable(head(a_monthly_data_long, 10),
+      caption = "First 10 Rows of Monthly Precipitation Data for Argentina")
+
+```
+
+
 ```{r ts creation colombia brazil and a, echo = FALSE}
 
 c_ts_monthly <- ts(c_monthly_data_long$Precipitation, 
@@ -196,6 +206,8 @@ a_ts_monthly <- ts(a_monthly_data_long$Precipitation,
 To visualize the data, a plot of the time series object was created for each country, and this was followed by an exploration of its patterns and autocorrelation using ACF and PACF. This information was helpful in deciding which models to use, as it provided information on the seasonality and auto regression.
 
 #### Colombia
+\
+\
 
 ```{r colombia initial plots, echo = FALSE}
 autoplot(c_ts_monthly) +
@@ -213,8 +225,11 @@ par(mfrow=c(1,1))
 The time series graph seems to show seasonality as there are visible peaks and troughs, consistent with a seasonal climate.There’s no clear upward or downward trend, suggesting the mean precipitation level has remained relatively stable over time. Moreover, although there’s variation in the amplitude showing more extreme years, this doesn’t appear to be systematically increasing or decreasing.
 
 The ACF shows a wave like pattern, and the significant autocorrelation at multiple repetitive lags suggests strong seasonality, likely due to Colombia's bi-modal rainy seasons. The PACF has a significant spike at lag 1 and smaller spikes at subsequent lags, suggesting a short-term auto regressive (AR) component, where current precipitation is influenced by the previous month or two.
+\
 
 #### Brazil
+\
+\
 
 ```{r brazil initial plots, echo = FALSE}
 autoplot(b_ts_monthly) +
@@ -230,8 +245,11 @@ par(mfrow=c(1,1))
 ```
 
 The Brazil time series plot demonstrates a clear seasonal pattern with consistent cycles of wet and dry periods throughout the 120-year record. The precipitation values typically range from around 50mm to 250mm depending on the season. The ACF plot shows a strong wave-like pattern with significant autocorrelation at lag 12, confirming the annual seasonality in Brazil's precipitation patterns. This regular oscillation indicates well-defined wet and dry seasons that repeat annually. The PACF displays significant spikes at lag 1 and decreasing spikes at subsequent lags, suggesting a short-term autoregressive component where precipitation in one month is influenced by the previous month's conditions.
+\
 
 #### Argentina
+\
+\
 
 ```{r AR Initial ts plots, echo = FALSE} 
 
@@ -255,10 +273,13 @@ The ACF shows a wave-like pattern with peaks at each lag, but does not show slow
 ### Exploratory Analysis - Decomposing and Detrending 
 
 The time series was also decomposed using both additive and multiplicative models in order to separate trend, seasonal, and residual components, allowing for more clear visualization prior to creating models. Following this, a linear trend model was fit to the time series object.
+\
 
 #### Decomposing Colombia series
+\
+\
 
-```{r decomposing colombia, echo = FALSE}
+```{r decomposing colombia, echo=}
 
 # Decompose using additive model
 c_decompose_monthly <- decompose(c_ts_monthly,"additive")
@@ -274,6 +295,8 @@ plot(c_mult_decompose_monthly)
 ```
 
 #### Detrending Colombia series
+\
+\
 
 ```{r detrending colombia, echo = FALSE}
 
@@ -288,8 +311,11 @@ summary(c_linear_trend_model)
 ```
 
 The slope is -0.000839mm/month of rain, indicating a very small but slight negative trend in precipitation. Nonetheless, the p-value is 0.852, which is considerably higher than 0.05, meaning that it's not statistically significant. The t value of 0.187 is also very close to 0 which indicates no meaningful relationship between monthly precipitation and time.
+\
 
 #### Decomposing Brazil series
+\
+\
 
 ```{r decomposing brazil, echo = FALSE}
 # Decompose
@@ -305,6 +331,8 @@ plot(b_mult_decompose_monthly)
 ```
 
 #### Detrending Brazil series
+\
+\
 
 ```{r detrending brazil, echo = FALSE}
 
@@ -319,8 +347,11 @@ summary(b_linear_trend_model)
 ```
 
 The slope is -0.000333mm/month of rain, indicating a very small but slight negative trend in precipitation. Nonetheless, the p-value is 0.934, which is considerably higher than 0.05, meaning that it's not statistically significant. The t value of -0.083 is also very close to 0 which indicates no meaningful relationship between monthly precipitation and time. The extremely low R-squared value (4.667e-06) further confirms that time explains virtually none of the variation in Brazil's precipitation patterns over the 120-year period analyzed.
+\
 
 #### Decomposing Argentina series
+\
+\
 
 ```{r Decompse ARG, echo=FALSE}
 # Decompose using additive
@@ -338,6 +369,8 @@ plot(a_mult_decompose_monthly)
 
 
 #### Detrending Argentina series
+\
+\
 
 ```{r Detrend ARG, echo=FALSE}
 
@@ -366,6 +399,8 @@ The data was split into training and testing data sets. The training data set co
 Each model generated a forecast and their accuracies were assessed using the metrics ME, RMSE, MAE, MPE, MAPE, ACF1, and Theil’s U. Finally, an overlay plot with all forecasts plotted on one graph was generated, allowing for visual comparison between models.
 
 #### Colombia
+\
+\
 
 ```{r testing and training colombia, echo = FALSE}
 c_train_precipitation <- window(c_ts_monthly, end = c(2020, 12))
@@ -469,6 +504,8 @@ grid.arrange(c_g1_titled, c_g2_titled, c_g3_titled, c_g4_titled, c_g5_titled, nc
 
 
 #### Brazil 
+\
+\
 
 ```{r testing and training brazil, echo = FALSE}
 b_train_precipitation <- window(b_ts_monthly, end = c(2020, 12))
@@ -567,8 +604,10 @@ par(mfrow = c(1, 1))
 ```
 
 #### Argentina
+\
+\
 
-```{r ARG testing and training subsets, echo = FALSE}
+```{r ARG testing and training subsets, message=FALSE, warning=FALSE, include=FALSE}
 
 a_train_precipitation <- window(a_ts_monthly, end = c(2020, 12))
 
@@ -580,7 +619,7 @@ a_test_precipitation <- window(a_ts_monthly, start = c(2021, 1), end = c(2024, 1
 
 ```
 
-```{r ARG ARIMA, echo = FALSE}
+```{r ARG ARIMA, message=FALSE, warning=FALSE, include=FALSE}
 
 a_fit_arima <- auto.arima(a_train_precipitation)
 a_pre_arima <- forecast(a_fit_arima, h = a_h)
@@ -590,7 +629,7 @@ plot(a_pre_arima, main = "ARIMA Forecast")
 
 ```
 
-```{r ARG ETS and STL, echo = FALSE}
+```{r ARG ETS and STL, message=FALSE, warning=FALSE, include=FALSE}
 
 a_pre_stl_ets <- stlf(a_train_precipitation, h = a_h, method = "ets")
 checkresiduals(a_pre_stl_ets)
@@ -598,7 +637,7 @@ plot(a_pre_stl_ets, main = "STL + ETS Forecast")
 
 ```
 
-```{r ARG ARIMA with Fourier, echo = FALSE}
+```{r ARG ARIMA with Fourier, message=FALSE, warning=FALSE, include=FALSE}
 
 a_K <- 6
 a_fourier_train <- fourier(a_train_precipitation, K = a_K)
@@ -612,7 +651,7 @@ plot(a_pre_fourier, main = "ARIMA + Fourier Forecast")
 
 ```
 
-```{r ARG TBATS, echo = FALSE}
+```{r ARG TBATS, message=FALSE, warning=FALSE, include=FALSE}
 
 a_fit_tbats <- tbats(a_train_precipitation)
 a_pre_tbats <- forecast(a_fit_tbats, h = a_h)
@@ -620,13 +659,13 @@ plot(a_pre_tbats, main = "TBATS Forecast")
 
 ```
 
-```{r ARG Network, echo = FALSE} 
+```{r ARG Network, message=FALSE, warning=FALSE, include=FALSE}
 a_fit_nnetar <- nnetar(a_train_precipitation)
 a_pre_nnetar <- forecast(a_fit_nnetar, h = a_h)
 plot(a_pre_nnetar, main = "NNETAR Forecast")
 ```
 
-```{r ARG combined forecast plots, echo = FALSE}
+```{r ARG combined forecast plots, echo=, message=FALSE, warning=FALSE}
 
 a_g1 <- as.ggplot(~plot(a_pre_arima, main = ""))
 a_g2 <- as.ggplot(~plot(a_pre_stl_ets, main = ""))
@@ -647,8 +686,11 @@ grid.arrange(a_g1_titled, a_g2_titled, a_g3_titled, a_g4_titled, a_g5_titled, nc
 ```
 
 ### Accuracy Metrics
+\
 
 #### Colombia
+\
+\
 
 ```{r colombia, echo = FALSE}
 
@@ -690,6 +732,8 @@ kbl(c_scores,
 
 
 #### Brazil
+\
+\
 
 ```{r brazil, , echo = FALSE}
 #Model 1: ARIMA
@@ -719,7 +763,12 @@ kbl(b_scores,
   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position")
 ```
 
-```{r ARG Comparing performance metrics, echo = FALSE}
+
+#### Argentina
+\
+\
+
+```{r ARG Comparing performance metrics, include=FALSE}
 
 a_calculate_all_metrics <- function(a_forecast_obj, a_test_data) {
   metrics <- accuracy(a_forecast_obj, a_test_data)["Test set", ]
@@ -772,7 +821,7 @@ a_accuracy_results_formatted <- a_accuracy_results %>%
 #print(a_accuracy_results_formatted)
 ```
 
-```{r ARG individual model scores, echo = FALSE}
+```{r ARG individual model scores, include=FALSE}
 
 #Model 1: ARIMA
 a_ARIMA_scores <- accuracy(a_pre_arima$mean,a_test_precipitation)  
@@ -791,18 +840,17 @@ a_NN_scores <- accuracy(a_pre_nnetar$mean,a_test_precipitation)
 
 ```
 
-```{r ARG all scores together, echo = FALSE}
+```{r ARG all scores together, message=FALSE, warning=FALSE, include=FALSE}
 
-#create data frame
+# Prep df for table
 a_scores <- as.data.frame(
   rbind(a_ARIMA_scores, a_ETS_scores, a_ARIMA_scores, a_TBATS_scores, a_NN_scores)
   )
 row.names(a_scores) <- c("ARIMA", "STL+ETS", "ARIMA+Fourier","TBATS","NN")
 
-
 ```
 
-```{r ARG score table, echo = FALSE}
+```{r ARG score table, echo=, message=FALSE, warning=FALSE}
 
 kbl(a_scores, 
       caption = "Forecast Accuracy for Precipitation in Argentina",
@@ -811,8 +859,11 @@ kbl(a_scores,
 ```
 
 ### Visual Model Comparison
+\
 
 #### Colombia
+\
+\
 
 ```{r, echo = FALSE}
 
@@ -839,6 +890,8 @@ TBATS: TBATS shows an aggressive increase in forecast uncertainty, which may ind
 NNETAR: This model captures the general seasonal shape, but the forecast appears more rigid and less sensitive to variation. It is the worst performer across the models, with a high RMSE indicating a high magnitude of error, a high MAPE, and the worst Theil's U. Therefore, NNETAR isn't a good fit.
 
 #### Brazil
+\
+\
 
 ```{r brazil, echo = FALSE}
 autoplot(b_test_precipitation) +
@@ -854,6 +907,8 @@ autoplot(b_test_precipitation) +
 The visual comparison of forecasting models for Brazil shows that all five models (ARIMA, STL+ETS, ARIMA+Fourier, TBATS, and Neural Network) capture the strong seasonal precipitation pattern. The ARIMA model demonstrates the best performance based on accuracy metrics, with the lowest RMSE (13.10) and best Theil's U score (0.29303). The forecast visualization shows consistent seasonal cycles continuing into the future, with precipitation ranging from approximately 50mm in dry months to 250mm in wet months. The forecast confidence bands widen gradually over time, representing increasing uncertainty in long-term predictions. All models maintain the same seasonal pattern without projecting any significant changes in seasonality or extreme events.
 
 #### Argentina
+\
+\
 
 ```{r ARG Comparing plots of models together, echo = FALSE}
 
@@ -869,33 +924,37 @@ autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
 
 ```
 
-**ARIMA**: The ARIMA model captures seasonality relatively well, but the forecast band is wide and widens over time, indicating increasing uncertainty. It has the second-highest RMSE, meaning the second-highest magnitude of error (as sensitive to outliers) and the highest MAE, or average magnitude of errors with less sensitivity to outliers. As a percentage, the average magnitude of errors of the ARIMA (MAPE) for Argentina is also second-highest.
+**ARIMA**: The ARIMA model captures seasonality relatively well. The forecast band is wide and widens over time, indicating increasing uncertainty. It has the lowest-magnitude ME, along with ARIMA + Fourier, indicating that its forecast is the least biased among all of the models attempted. The ARIMA, however, has the highest RMSE, meaning the largest magnitude of error (as sensitive to outliers) and the highest MAE, or average magnitude of errors with less sensitivity to outliers. As a percentage, the average magnitude of errors of the ARIMA (MAPE) for Argentina is also highest, which is undesirable in a model performance metric, as it's not a great fit for the series.
 \
-**STL + ETS**: The STL + ETS model shows a smooth forecast curve with seasonality retained. This model does not do a good job of capturing and forecasting any non-seasonal cyclical patterns or random components. Uncertainty of the forecast increases over time, similarly to the ARIMA model. This is the model with the lowest, or best, MAPE, meaning it has the smallest average magnitude of the errors. It also has the second-lowest RMSE and MAE.
+**STL + ETS**: The Seasonal Trend Decomposition + Error-Trend_seasonal model combination shows a smooth forecast curve with seasonality retained. This model does not do a good job of capturing and forecasting any non-seasonal cyclical patterns or random components. Uncertainty of the forecast increases over time, similarly to the ARIMA model. This hybrid-approach model had the highest ME, or most biased forecast. It performed better than the ARIMA models if judged by MAE and had the best MAPE of any of the models, meaning it had the smallest average magnitude of errors. 
 \
-**ARIMA + Fourier**: This model had the largest-magnitude bias in its forecast (ME). Although similar to regular ARIMA, it performed better on RMSE and MAE scores.
+**ARIMA + Fourier**: This model had the exact same performance (i.e., error) metrics as the ARIMA no Fourier terms as exogenous regressors. The Fourier terms used with ARIMA are supposed to approximate cyclical patterns in the data, but even assessing the model visually, no more cyclicality seems to be reflected. It may be that there wasn't a need for representing the cyclical component--perhaps the differences in peaks over the years have a large random component. Judging by the random component in the decomposed series, maybe there is multiple seasonality at play in this precipitation data that this project did not capture, as there seem to be somewhat evenly-spaced peaks and troughs even after the seasonal component is separated out. The uncertainty in the forecast bands of the ARIMA+Fourier does not increase over time like in the ARIMA.
 \
-**TBATS**: As in the forecasts for Colombia, TBATS shows an aggressive increase in forecast uncertainty over time. In the case of Argentina, however, the TBATS has the lowest RMSE and MAE scores and second-lowest MAPE.
+**TBATS**: As in the forecasts for Colombia, TBATS shows an aggressive increase in forecast uncertainty over time. Although it uses a Fourier-like decomposition, this model produced significantly different results. The TBATS model had the lowest RMSE, the lowest MAE and the lowest Theil's U. In terms of MAPE, it was a middle performer. This model had the highest-magnitude MPE.
 \
-**NNETAR**: The NNETAR was the model with the lowest-magnitude bias in the forecast. Nevertheless, the Neural Network model had the highest RMSE, second-highest MAE, and its MAPE score was the middle performer among models. 
+**NNETAR**: The NNETAR had the second-lowest MAE, the second-lowest MAPE, and the second-lowest Theil's U. Otherwise, it was a middle performer among models.
 \
-MASE values, not shown here, were < 1 for all models, indicating that these models are not performing better than the naive model. 
 \
 To test if any of the above models would perform better without outliers, tsclean() was run on the time series object, but identified no outliers. Moving forward with all original maximum and minimum values was preferred anyway, given that this project sought to learn about exactly that: the *extreme* precipitation values over time. 
+\
+\
+None of the models for Argentina had a high F1 score; they all scored low on precision and recall. Much more work would be needed to get to a good model fit and forecast for precipitation in Argentina. 
 
 ## Summary
 
-Time series analysis was applied to precipitation patterns in Argentina, Brazil, and Colombia using monthly data from 1901 to 2024. Five forecasting models were evaluated: ARIMA, STL+ETS, ARIMA with Fourier Terms, TBATS, and Neural Network Autoregression to determine optimal prediction methodologies for each country. Training data from January 1901 to December 2020 was utilized, with model validation performed against testing data from January 2021 to December 2024. Model performance was assessed using multiple accuracy metrics (ME, RMSE, MAE, MPE, MAPE, ACF1, and Theil's U). The analysis aimed to identify changes in precipitation seasonality patterns, particularly relevant given IPCC projections of increasing extreme precipitation events due to climate change. These findings are significant considering recent research showing that Central South America received only 44% of average total precipitation during the last four months of 2022, highlighting the increasing variability in regional rainfall patterns (Rivera et al., 2023).
+Time series analysis was applied to precipitation patterns in Argentina, Brazil, and Colombia using monthly data from 1901 to 2024. Five forecasting models were evaluated: ARIMA, STL+ETS, ARIMA with Fourier Terms, TBATS, and Neural Network Autoregression to determine optimal prediction methodologies for each country. Training data from January 1901 to December 2020 was utilized, with model validation performed against testing data from January 2021 to December 2024. Model performance was assessed using multiple accuracy metrics (ME, RMSE, MAE, MPE, MAPE, ACF1, and Theil's U). The analysis aimed to identify changes in precipitation seasonality patterns, particularly relevant given IPCC projections of increasing extreme precipitation events due to climate change. These findings are significant considering recent research showing that Central South America received only 44% of average total precipitation during the last four months of 2022, highlighting the increasing variability in regional rainfall patterns (Rivera et al., 2023). There was not one single model that worked best across the three countries studied. If judging primarily by MAPE score, TBATS performed best for Colombia, ARIMA (not using Fourier terms) performed best for Brazil, and STL+ETS performed best for Argentina.
 
 ## Conclusion
 
-The analysis found no pattern in precipitation periods over time - there was no significant increase or decrease, and extremities also didn’t systematically increase or decrease. This is contradictory to what the wider data displays; IPCC projections show that precipitation patterns are meant to be increasingly variable due to climate change, indicating that agricultural producers in these regions will face adaptation challenges related to changing water availability patterns. This could be because the data we used is country wide, and our three selected countries have large land areas, and therefore, experience different patterns across the regions. Therefore, perhaps if we used data in more localized, smaller regions, we would have found patterns changing over time; there may not be an overall change across entire countries because variability could average out to appear consistent, but in small areas, more frequent droughts or higher rainfall likely exist.
+The analysis found no pattern in precipitation periods over time for Brazil and Colombia--there was no significant increase or decrease. For Argentina, a very small increasing trend is present with slight confidence. Some of these results sit in contrast to what the wider data displays; IPCC projections show that precipitation patterns are meant to be increasingly variable due to climate change, indicating that agricultural producers in these regions will face adaptation challenges related to changing water availability patterns and more extreme events.  This could be because the data we used is country-wide, and our three selected countries have large land areas, and therefore, experience different patterns across the regions. Therefore, perhaps if we used data in more localized, smaller regions, we would have found patterns changing over time; there may not be an overall change across entire countries because variability could average out to appear consistent, but in small areas, more frequent droughts or higher rainfall likely exist.
 
 Regardless, the topic remains important and precipitation pattern monitoring and forecasting for agricultural planning in regions with limited irrigation infrastructure is crucial. Recent research has confirmed that in South America, rainfall patterns are projected to shift significantly, with decreases expected in the eastern northern Andes, southern Andes in Chile, and Amazonia, while increases are projected for southeastern South America and the northern Andes (Almazroui et al., 2021). These changes have significant implications for agricultural productivity. As noted by the Economic Commission for Latin America and the Caribbean, climate change effects on temperature and precipitation patterns could reduce rural incomes by as much as 20% in some South American countries (ECLAC, n.d.). Furthermore, NASA research suggests that climate change may affect the production of key crops like maize as early as 2030, with projected yield declines of up to 24% in regions including Brazil (NASA, 2023).
 
 ## Limitations and insights on how to improve the model
 
 Predicting changes in frequency and intensity of extreme precipitation events is deeply complex and, as stated in the IPCC Sixth Assessment report, “increases in the intensity of extreme precipitation at regional scales will vary, depending on the amount of regional warming, changes in atmospheric circulation and storm dynamics (high confidence)” (Seneviratne et al., 2019). Regarding limitations, it should be noted that, while we use precipitation data at the country level, precipitation patterns can vary drastically within each country, which contain multiple and varying ecosystems. Forecasting precipitation levels at the country scale does not account for precipitation patterns across different regions within a country. To make these models more helpful, time series models could be used could to analyze and forecast precipitation within key crop-producing provinces; in Argentina, for instance, this could be the provinces of Santa Fe, Córdoba, and Buenos Aires, where climate, water tables, and precipitation vastly differ from the southern tip of Argentina’s Misiones, Tierra del Fuego, and Jujuy provinces.
+
+A follow-up to this project could identify local maxima and local minima from, e.g., 1901-1962 and 1963-2024, then compare the means of the local maxima and minima of the earlier set of years with those of the latter set of years. This could provide an interesting analysis of whether the average of the extremes are different in the two sets. 
 
 # Contribution statement of this report
 
