@@ -603,6 +603,26 @@ lines(b_test_precipitation, col = "black")
 par(mfrow = c(1, 1))
 ```
 
+```{r BR combined forecast plots, echo=, message=FALSE, warning=FALSE}
+
+b_g1 <- as.ggplot(~plot(b_pre_arima, main = ""))
+b_g2 <- as.ggplot(~plot(b_pre_stl_ets, main = ""))
+b_g3 <- as.ggplot(~plot(b_pre_fourier, main = ""))
+b_g4 <- as.ggplot(~plot(b_pre_tbats, main = ""))
+b_g5 <- as.ggplot(~plot(b_pre_nnetar, main = ""))
+
+
+b_g1_titled <- arrangeGrob(b_g1, top = textGrob("ARIMA Forecast (Brazil)", gp = gpar(fontface = "bold")))
+b_g2_titled <- arrangeGrob(b_g2, top = textGrob("STL + ETS Forecast (Brazil)", gp = gpar(fontface = "bold")))
+b_g3_titled <- arrangeGrob(b_g3, top = textGrob("ARIMA + Fourier Forecast (Brazil)", gp = gpar(fontface = "bold")))
+b_g4_titled <- arrangeGrob(b_g4, top = textGrob("TBATS Forecast (Brazil)", gp = gpar(fontface = "bold")))
+b_g5_titled <- arrangeGrob(b_g5, top = textGrob("NNETAR Forecast (Brazil)", gp = gpar(fontface = "bold")))
+
+
+grid.arrange(b_g1_titled, b_g2_titled, b_g3_titled, bb_g4_titled, b_g5_titled, ncol = 2)
+
+```
+
 #### Argentina
 \
 \
@@ -688,9 +708,6 @@ grid.arrange(a_g1_titled, a_g2_titled, a_g3_titled, a_g4_titled, a_g5_titled, nc
 ### Accuracy Metrics
 \
 
-#### Colombia
-\
-\
 
 ```{r colombia, echo = FALSE}
 
@@ -731,10 +748,6 @@ kbl(c_scores,
 ```
 
 
-#### Brazil
-\
-\
-
 ```{r brazil, , echo = FALSE}
 #Model 1: ARIMA
 b_ARIMA_scores <- accuracy(b_pre_arima$mean,b_test_precipitation)  
@@ -763,10 +776,6 @@ kbl(b_scores,
   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position")
 ```
 
-
-#### Argentina
-\
-\
 
 ```{r ARG Comparing performance metrics, include=FALSE}
 
@@ -863,7 +872,6 @@ kbl(a_scores,
 
 #### Colombia
 \
-\
 
 ```{r, echo = FALSE}
 
@@ -891,7 +899,6 @@ NNETAR: This model captures the general seasonal shape, but the forecast appears
 
 #### Brazil
 \
-\
 
 ```{r brazil, echo = FALSE}
 autoplot(b_test_precipitation) +
@@ -907,7 +914,6 @@ autoplot(b_test_precipitation) +
 The visual comparison of forecasting models for Brazil shows that all five models (ARIMA, STL+ETS, ARIMA+Fourier, TBATS, and Neural Network) capture the strong seasonal precipitation pattern. The ARIMA model demonstrates the best performance based on accuracy metrics, with the lowest RMSE (13.10) and best Theil's U score (0.29303). The forecast visualization shows consistent seasonal cycles continuing into the future, with precipitation ranging from approximately 50mm in dry months to 250mm in wet months. The forecast confidence bands widen gradually over time, representing increasing uncertainty in long-term predictions. All models maintain the same seasonal pattern without projecting any significant changes in seasonality or extreme events.
 
 #### Argentina
-\
 \
 
 ```{r ARG Comparing plots of models together, echo = FALSE}
