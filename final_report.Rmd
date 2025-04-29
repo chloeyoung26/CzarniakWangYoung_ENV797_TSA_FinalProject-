@@ -233,7 +233,7 @@ The Brazil time series plot demonstrates a clear seasonal pattern with consisten
 
 #### Argentina
 
-```{r AR Initial ts plots}
+```{r AR Initial ts plots, echo = FALSE} 
 
 autoplot(a_ts_monthly) +
   ggtitle("Monthly Precipitation Time Series (Argentina)") +
@@ -568,19 +568,19 @@ par(mfrow = c(1, 1))
 
 #### Argentina
 
-```{r ARG testing and training subsets}
+```{r ARG testing and training subsets, echo = FALSE}
 
 a_train_precipitation <- window(a_ts_monthly, end = c(2020, 12))
 
 a_h <- 360
 
-a_total_months <- length(ts_monthly)
+a_total_months <- length(a_ts_monthly)
 
 a_test_precipitation <- window(a_ts_monthly, start = c(2021, 1), end = c(2024, 12))
 
 ```
 
-```{r ARG ARIMA}
+```{r ARG ARIMA, echo = FALSE}
 
 a_fit_arima <- auto.arima(a_train_precipitation)
 a_pre_arima <- forecast(a_fit_arima, h = a_h)
@@ -590,7 +590,7 @@ plot(a_pre_arima, main = "ARIMA Forecast")
 
 ```
 
-```{r ARG ETS and STL}
+```{r ARG ETS and STL, echo = FALSE}
 
 a_pre_stl_ets <- stlf(a_train_precipitation, h = a_h, method = "ets")
 checkresiduals(a_pre_stl_ets)
@@ -598,10 +598,10 @@ plot(a_pre_stl_ets, main = "STL + ETS Forecast")
 
 ```
 
-```{r ARG ARIMA with Fourier}
+```{r ARG ARIMA with Fourier, echo = FALSE}
 
 a_K <- 6
-a_fourier_train <- fourierv(a_train_precipitation, K = a_K)
+a_fourier_train <- fourier(a_train_precipitation, K = a_K)
 a_fourier_future <- fourier(a_train_precipitation, K = a_K, h = a_h)
 a_fit_fourier <- auto.arima(a_train_precipitation, xreg = a_fourier_train, seasonal = FALSE)
 a_pre_fourier <- forecast(a_fit_fourier, xreg = a_fourier_future, h = a_h)
@@ -612,7 +612,7 @@ plot(a_pre_fourier, main = "ARIMA + Fourier Forecast")
 
 ```
 
-```{r ARG TBATS}
+```{r ARG TBATS, echo = FALSE}
 
 a_fit_tbats <- tbats(a_train_precipitation)
 a_pre_tbats <- forecast(a_fit_tbats, h = a_h)
@@ -620,7 +620,7 @@ plot(a_pre_tbats, main = "TBATS Forecast")
 
 ```
 
-```{r ARG Network}
+```{r ARG Network, echo = FALSE} 
 a_fit_nnetar <- nnetar(a_train_precipitation)
 a_pre_nnetar <- forecast(a_fit_nnetar, h = a_h)
 plot(a_pre_nnetar, main = "NNETAR Forecast")
@@ -719,7 +719,7 @@ kbl(b_scores,
   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position")
 ```
 
-```{r ARG Comparing performance metrics}
+```{r ARG Comparing performance metrics, echo = FALSE}
 
 a_calculate_all_metrics <- function(a_forecast_obj, a_test_data) {
   metrics <- accuracy(a_forecast_obj, a_test_data)["Test set", ]
@@ -855,7 +855,7 @@ The visual comparison of forecasting models for Brazil shows that all five model
 
 #### Argentina
 
-```{r ARG Comparing plots of models together}
+```{r ARG Comparing plots of models together, echo = FALSE}
 
 autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
    autolayer(a_pre_arima, PI=FALSE, series="ARIMA") +
