@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.25)  28 APR 2025 22:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.25)  28 APR 2025 23:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -828,125 +828,80 @@ Underfull \hbox (badness 10000) in paragraph at lines 541--543
 
 
 [16 <./final_report_files/figure-latex/combined forecast plots colombia-1.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 546--548
+<final_report_files/figure-latex/BR combined forecast plots-1.pdf, id=194, 469.755pt x 325.215pt>
+File: final_report_files/figure-latex/BR combined forecast plots-1.pdf Graphic file (type pdf)
+<use final_report_files/figure-latex/BR combined forecast plots-1.pdf>
+Package pdftex.def Info: final_report_files/figure-latex/BR combined forecast plots-1.pdf  used on input line 544.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 548--550
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 546--548
+Underfull \hbox (badness 10000) in paragraph at lines 548--550
 
  []
 
-<final_report_files/figure-latex/ARG combined forecast plots-1.pdf, id=194, 469.755pt x 325.215pt>
+<final_report_files/figure-latex/ARG combined forecast plots-1.pdf, id=195, 469.755pt x 325.215pt>
 File: final_report_files/figure-latex/ARG combined forecast plots-1.pdf Graphic file (type pdf)
 <use final_report_files/figure-latex/ARG combined forecast plots-1.pdf>
-Package pdftex.def Info: final_report_files/figure-latex/ARG combined forecast plots-1.pdf  used on input line 549.
+Package pdftex.def Info: final_report_files/figure-latex/ARG combined forecast plots-1.pdf  used on input line 551.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 553--554
 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 557--559
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 557--559
+[17 <./final_report_files/figure-latex/BR combined forecast plots-1.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 555--556
 
  []
 
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 564.
+(Font)              <10> on input line 561.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 564.
+(Font)              <7> on input line 561.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 564.
+(Font)              <5> on input line 561.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 583--585
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 583--585
-
- []
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 609--611
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 609--611
-
- []
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 635--636
+Underfull \hbox (badness 10000) in paragraph at lines 622--623
 
  []
 
 
 
-[17 <./final_report_files/figure-latex/ARG combined forecast plots-1.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 639--641
+[18 <./final_report_files/figure-latex/ARG combined forecast plots-1.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 626--627
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 639--641
-
- []
-
-<final_report_files/figure-latex/unnamed-chunk-3-1.pdf, id=211, 469.755pt x 325.215pt>
+<final_report_files/figure-latex/unnamed-chunk-3-1.pdf, id=221, 469.755pt x 325.215pt>
 File: final_report_files/figure-latex/unnamed-chunk-3-1.pdf Graphic file (type pdf)
 <use final_report_files/figure-latex/unnamed-chunk-3-1.pdf>
-Package pdftex.def Info: final_report_files/figure-latex/unnamed-chunk-3-1.pdf  used on input line 642.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-
-[18]
-Underfull \hbox (badness 10000) in paragraph at lines 670--672
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 670--672
-
- []
-
-<final_report_files/figure-latex/brazil-1.pdf, id=221, 469.755pt x 325.215pt>
-File: final_report_files/figure-latex/brazil-1.pdf Graphic file (type pdf)
-<use final_report_files/figure-latex/brazil-1.pdf>
-Package pdftex.def Info: final_report_files/figure-latex/brazil-1.pdf  used on input line 673.
+Package pdftex.def Info: final_report_files/figure-latex/unnamed-chunk-3-1.pdf  used on input line 628.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
 
 [19 <./final_report_files/figure-latex/unnamed-chunk-3-1.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 689--691
+Underfull \hbox (badness 10000) in paragraph at lines 656--657
 
  []
 
+<final_report_files/figure-latex/brazil-1.pdf, id=235, 469.755pt x 325.215pt>
+File: final_report_files/figure-latex/brazil-1.pdf Graphic file (type pdf)
+<use final_report_files/figure-latex/brazil-1.pdf>
+Package pdftex.def Info: final_report_files/figure-latex/brazil-1.pdf  used on input line 658.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 689--691
+Underfull \hbox (badness 10000) in paragraph at lines 674--675
 
  []
 
-<final_report_files/figure-latex/ARG Comparing plots of models together-1.pdf, id=233, 469.755pt x 325.215pt>
+<final_report_files/figure-latex/ARG Comparing plots of models together-1.pdf, id=236, 469.755pt x 325.215pt>
 File: final_report_files/figure-latex/ARG Comparing plots of models together-1.pdf Graphic file (type pdf)
 <use final_report_files/figure-latex/ARG Comparing plots of models together-1.pdf>
-Package pdftex.def Info: final_report_files/figure-latex/ARG Comparing plots of models together-1.pdf  used on input line 692.
+Package pdftex.def Info: final_report_files/figure-latex/ARG Comparing plots of models together-1.pdf  used on input line 676.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
 
@@ -955,29 +910,29 @@ Package pdftex.def Info: final_report_files/figure-latex/ARG Comparing plots of 
 [21 <./final_report_files/figure-latex/ARG Comparing plots of models together-1.pdf>]
 
 [22]
-Underfull \hbox (badness 10000) in paragraph at lines 833--841
+Underfull \hbox (badness 10000) in paragraph at lines 817--825
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 859--864
+Underfull \hbox (badness 10000) in paragraph at lines 843--848
 \T1/lmr/m/n/10 en / pressreleases / climate -[] change -[] threatens -[] basis -[] food -[] security -[] latin -[] america -[] and -[] caribbean -[] agriculture$[].
  []
 
 
 
 [23]
-Overfull \hbox (124.77199pt too wide) in paragraph at lines 873--878
+Overfull \hbox (124.77199pt too wide) in paragraph at lines 857--862
 \T1/lmr/m/n/10 Agri-cul-ture, Fish-eries, Food Se-cu-rity and Nature.https://www.agroberichtenbuitenland.nl/landeninformatie/colombia/achtergrond/agro-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 884--888
+Underfull \hbox (badness 10000) in paragraph at lines 868--872
 \T1/lmr/m/n/10 Finds.https://climate.nasa.gov/news/3124/global-climate-change-impact-on-crops-expected-within-10-
  []
 
 
-Overfull \hbox (293.8498pt too wide) in paragraph at lines 908--912
+Overfull \hbox (293.8498pt too wide) in paragraph at lines 892--896
 \T1/lmr/m/n/10 industry#$[]:~:text=One%20of%20Argentina%27s%20most%20important%20economic%20sectors,beef%2C%20wine%2C%20soy%2C%20wheat%2C%20and%20other%20cereals..
  []
 
@@ -990,18 +945,18 @@ L3 programming layer <2025-03-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 13158 strings out of 471607
- 209522 string characters out of 5520537
- 603148 words of memory out of 5000000
- 39409 multiletter control sequences out of 15000+600000
+ 13159 strings out of 471607
+ 209974 string characters out of 5520537
+ 603050 words of memory out of 5000000
+ 39413 multiletter control sequences out of 15000+600000
  677561 words of font info for 82 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  89i,9n,93p,699b,589s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </Users/weilynnw/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></Users/weilynnw/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></Users/weilynnw/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb></Users/weilynnw/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb></Users/weilynnw/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr17.pfb></Users/weilynnw/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb></Users/weilynnw/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on final_report.pdf (24 pages, 676417 bytes).
+Output written on final_report.pdf (24 pages, 755429 bytes).
 PDF statistics:
- 397 PDF objects out of 1000 (max. 8388607)
- 319 compressed objects within 4 object streams
- 72 named destinations out of 1000 (max. 500000)
- 230 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 401 PDF objects out of 1000 (max. 8388607)
+ 321 compressed objects within 4 object streams
+ 69 named destinations out of 1000 (max. 500000)
+ 235 words of extra memory for PDF output out of 10000 (max. 10000000)
 

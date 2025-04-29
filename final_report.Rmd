@@ -603,7 +603,7 @@ lines(b_test_precipitation, col = "black")
 par(mfrow = c(1, 1))
 ```
 
-```{r BR combined forecast plots, echo=, message=FALSE, warning=FALSE}
+```{r BR combined forecast plots, echo=FALSE, message=FALSE, warning=FALSE}
 
 b_g1 <- as.ggplot(~plot(b_pre_arima, main = ""))
 b_g2 <- as.ggplot(~plot(b_pre_stl_ets, main = ""))
@@ -619,7 +619,7 @@ b_g4_titled <- arrangeGrob(b_g4, top = textGrob("TBATS Forecast (Brazil)", gp = 
 b_g5_titled <- arrangeGrob(b_g5, top = textGrob("NNETAR Forecast (Brazil)", gp = gpar(fontface = "bold")))
 
 
-grid.arrange(b_g1_titled, b_g2_titled, b_g3_titled, bb_g4_titled, b_g5_titled, ncol = 2)
+grid.arrange(b_g1_titled, b_g2_titled, b_g3_titled, b_g4_titled, b_g5_titled, ncol = 2)
 
 ```
 
