@@ -269,7 +269,33 @@ autoplot(a_test_precipitation, main = "Comparing forecasts for Argentina") +
 
 ## Our data begins at 1901--we are lucky to be working with records from over more than 100 years.
 ## Let's break the data into two parts, 1901-1962 and 1963-2024.
-## We want to then compare the mean of the high points and the mean of the low points to see if the mangitudes of the extremes are changing.
+## We want to then compare the mean of the high points and the mean of the low points to see if the magnitudes of the extremes are changing.
+
+a_precip_1sthalf <- window(tsclean(a_ts_monthly), end = c(1962, 12))
+
+a_precip_2ndhalf <- window(a_ts_monthly, start = c(1963, 1), end = c(2024, 12))
+
+a_MEAN_precip_1sthalf <- mean(y = ts_electricity_price[,"All.sectors"], h = 36)
+plot(MEAN_seas)
+
+install.packages("quantmod")
+a_peaks_1sthalf <- quantmod::findPeaks(a_precip_1sthalf)
+a_peaks_2ndhalf <- quantmod::findPeaks(a_precip_2ndhalf)
+
+a_peaks_mean_1st <- mean(a_peaks_1sthalf)
+a_ts_peaks_mean_1st <- ts(a_peaks_mean_1st, start = c(1901,1), frequency = 12)
+
+a_peaks_mean_2nd <- mean(a_peaks_2ndhalf)
+a_peaks_mean_2nd
+
+# Plot
+#cowplot::plot_grid()
+
+ggplot(a_precip_1sthalf,type="l",col="blue")+
+  abline(mean(a_peaks_1sthalf),col="red")+
+   autolayer(a_ts_peaks_mean_1st,color="green")
+  autoplot(a_precip_2ndhalf, 
+           main = "Argentina Precipitation 1963-2024"))
 
 ```
 
