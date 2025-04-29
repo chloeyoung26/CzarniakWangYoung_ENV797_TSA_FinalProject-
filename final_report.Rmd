@@ -279,7 +279,7 @@ The time series was also decomposed using both additive and multiplicative model
 \
 \
 
-```{r decomposing colombia, echo=}
+```{r decomposing colombia, echo= FALSE}
 
 # Decompose using additive model
 c_decompose_monthly <- decompose(c_ts_monthly,"additive")
@@ -665,7 +665,7 @@ a_pre_nnetar <- forecast(a_fit_nnetar, h = a_h)
 plot(a_pre_nnetar, main = "NNETAR Forecast")
 ```
 
-```{r ARG combined forecast plots, echo=, message=FALSE, warning=FALSE}
+```{r ARG combined forecast plots, echo=FALSE, message=FALSE, warning=FALSE}
 
 a_g1 <- as.ggplot(~plot(a_pre_arima, main = ""))
 a_g2 <- as.ggplot(~plot(a_pre_stl_ets, main = ""))
@@ -850,7 +850,7 @@ row.names(a_scores) <- c("ARIMA", "STL+ETS", "ARIMA+Fourier","TBATS","NN")
 
 ```
 
-```{r ARG score table, echo=, message=FALSE, warning=FALSE}
+```{r ARG score table, echo=FALSE, message=FALSE, warning=FALSE}
 
 kbl(a_scores, 
       caption = "Forecast Accuracy for Precipitation in Argentina",
