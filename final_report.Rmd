@@ -769,7 +769,7 @@ a_accuracy_results_formatted <- a_accuracy_results %>%
   arrange(RMSE) %>%  # Sort by RMSE
   mutate(across(where(is.numeric), round, 3))
 
-print(a_accuracy_results_formatted)
+#print(a_accuracy_results_formatted)
 ```
 
 ```{r ARG individual model scores, echo = FALSE}
